@@ -1,0 +1,37 @@
+[tool.poetry]
+name = "palkia"
+version = "0.1.0"
+description = ""
+authors = ["happy663 <tatu2425@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+pytest = "^8.2.2"
+ruff = "^0.5.5"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+extend-include = ["*.ipynb"]
+select = ["ALL"]
+ignore = [
+  "E501",    # line too long, handled by black
+  "PLR0913",
+  "D100",
+  "D101",
+  "D102",
+  "D103",
+  "D107",
+  "ANN101",
+]
+
+[tool.pyright]
+typeCheckingMode = "standard"
+# basePath
+venvPath = "."
+# basePathから指定する
+venv = ".venv"
