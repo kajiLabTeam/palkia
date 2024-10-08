@@ -9,6 +9,9 @@ readme = "README.md"
 python = "^3.12"
 pytest = "^8.2.2"
 ruff = "^0.5.5"
+numpy = "^2.1.0"
+scipy = "^1.14.0"
+pandera = "^0.20.3"
 
 
 [build-system]
@@ -35,3 +38,8 @@ typeCheckingMode = "standard"
 venvPath = "."
 # basePathから指定する
 venv = ".venv"
+
+
+[tool.pytest.ini_options]
+pythonpath = "./src/common"
+# testpaths = "./src/common/map_matching"

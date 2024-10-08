@@ -1,10 +1,2 @@
-
 install:
 	poetry install
-
-	
-
-
-
-
-
