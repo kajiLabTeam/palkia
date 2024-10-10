@@ -39,19 +39,6 @@ def plot_trajectory(
     """
     plt.figure(figsize=(10, 10))
 
-    if floor_map is not None:
-        plt.imshow(
-            np.rot90(floor_map.floor_map_data),
-            extent=(
-                0,
-                floor_map.floor_map_data.shape[0] * floor_map.dx,
-                0,
-                floor_map.floor_map_data.shape[1] * floor_map.dy,
-            ),
-            cmap="binary",
-            alpha=0.5,
-        )
-
     plt.plot(
         trajectory[COORDINATE_X],
         trajectory[COORDINATE_Y],
@@ -82,6 +69,20 @@ def plot_trajectory(
     plt.legend()
     plt.grid()
     plt.axis("equal")
+
+    if floor_map is not None:
+        plt.title(floor_map.floor_name)
+        plt.imshow(
+            np.rot90(floor_map.floor_map_data),
+            extent=(
+                0,
+                floor_map.floor_map_data.shape[0] * floor_map.dx,
+                0,
+                floor_map.floor_map_data.shape[1] * floor_map.dy,
+            ),
+            cmap="binary",
+            alpha=0.5,
+        )
     plt.show()
 
 

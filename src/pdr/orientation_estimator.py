@@ -6,7 +6,7 @@ from src.utils.data_preprocessor import match_data
 
 
 class OrientationEstimator:
-    def __init__(self, drift_correction_factor: float = 0.01) -> None:
+    def __init__(self, drift_correction_factor: float = 0) -> None:
         self.drift_correction_factor = drift_correction_factor
 
     def __calculate_full_orientation(self, gyro_data: pd.DataFrame) -> pd.DataFrame:
@@ -19,10 +19,10 @@ class OrientationEstimator:
         )
 
         # ドリフト補正
-        # time_elapsed = gyro_data[TIMESTAMP] - gyro_data[TIMESTAMP].iloc[0]
-        # orientation["angle"] -= (
-        #     self.drift_correction_factor * time_elapsed * orientation["angle"].iloc[-1]
-        # )
+        time_elapsed = gyro_data[TIMESTAMP] - gyro_data[TIMESTAMP].iloc[0]
+        orientation[ANGLE] -= (
+            self.drift_correction_factor * time_elapsed * orientation[ANGLE].iloc[-1]
+        )
 
         return orientation
 

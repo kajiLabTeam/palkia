@@ -42,6 +42,7 @@ def main() -> None:
     trajectory = pdr_estimator.estimate_trajectory(acc_data, gyro_data)
 
     floor_map = FloorMap(
+        floor_name=gt_data[FLOOR_NAME][0],
         floor_map_path=FLOOR_MAP_PATH.format(gt_data[FLOOR_NAME][0]),
         dx=0.01,
         dy=0.01,

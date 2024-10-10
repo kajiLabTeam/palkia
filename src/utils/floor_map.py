@@ -3,7 +3,8 @@ from PIL import Image
 
 
 class FloorMap:
-    def __init__(self, floor_map_path: str, dx: float, dy: float) -> None:
+    def __init__(self, floor_name, floor_map_path: str, dx: float, dy: float) -> None:
+        self.floor_name = floor_name
         self.floor_map_data = FloorMap.__load_floor_map(floor_map_path)
         # ピクセル間の距離
         self.dx = dx
