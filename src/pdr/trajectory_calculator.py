@@ -27,11 +27,10 @@ class TrajectoryCalculator:
                 "y": 0,
             }
 
-        trajectory = pd.DataFrame(columns=[TIMESTAMP, "x", "y"])
         x_moves = self.step_length * np.cos(step_orientation[ANGLE])
         y_moves = self.step_length * np.sin(step_orientation[ANGLE])
         # 新しいデータフレームを作成
-        new_trajectory = pd.DataFrame(
+        trajectory = pd.DataFrame(
             {
                 TIMESTAMP: step_orientation[TIMESTAMP],
                 COORDINATE_X: x_moves.cumsum() + self.initial_point["x"],
@@ -39,7 +38,4 @@ class TrajectoryCalculator:
             },
         )
         # 空のエントリを除外
-        new_trajectory = new_trajectory.dropna(how="all")
-
-        # 連結
-        return pd.concat([trajectory, new_trajectory])
+        return trajectory.dropna(how="all")
