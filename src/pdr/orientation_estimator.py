@@ -35,6 +35,4 @@ class OrientationEstimator:
         full_orientation = self.__calculate_full_orientation(gyro_data)
 
         # 歩行ステップ時の方向データを抽出
-        step_orientation = match_data(full_orientation, step_times)
-
-        return step_orientation
+        return match_data(full_orientation, step_times)

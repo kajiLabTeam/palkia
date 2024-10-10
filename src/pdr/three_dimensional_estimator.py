@@ -18,7 +18,7 @@ class ThreeDimensionalEstimator:
         trajectory_2d = self.pdr_estimator.estimate_trajectory(acc_data, gyro_data)
 
         # 気圧データから高度を推定
-        height = self._estimate_height_from_pressure(baro_data)
+        height = self.__estimate_height_from_pressure(baro_data)
 
         # 3D軌跡の生成
         trajectory_3d = trajectory_2d.copy()
@@ -30,7 +30,7 @@ class ThreeDimensionalEstimator:
 
         return trajectory_3d
 
-    def _estimate_height_from_pressure(self, baro_data: pd.DataFrame) -> np.ndarray:
+    def __estimate_height_from_pressure(self, baro_data: pd.DataFrame) -> np.ndarray:
         # 気圧から高度への変換 簡易実装
         pressure_sea_level = 1013.25  # hPa
         height = 44330 * (
