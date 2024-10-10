@@ -5,7 +5,7 @@ from .pdr_estimator import PDREstimator
 
 
 class ThreeDimensionalEstimator:
-    def __init__(self, pdr_estimator: PDREstimator):
+    def __init__(self, pdr_estimator: PDREstimator) -> None:
         self.pdr_estimator = pdr_estimator
 
     def estimate_3d_trajectory(
@@ -31,7 +31,7 @@ class ThreeDimensionalEstimator:
         return trajectory_3d
 
     def _estimate_height_from_pressure(self, baro_data: pd.DataFrame) -> np.ndarray:
-        # 気圧から高度への変換（簡易的な実装）
+        # 気圧から高度への変換 簡易実装
         pressure_sea_level = 1013.25  # hPa
         height = 44330 * (
             1 - (baro_data["pressure"] / pressure_sea_level) ** (1 / 5.255)

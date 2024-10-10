@@ -13,7 +13,7 @@ GYRO_X = "gyro_x"
 GYRO_Y = "gyro_y"
 GYRO_Z = "gyro_z"
 
-# 角度 (ジャイロを積分したもの)
+# 角度 ジャイロを積分したもの
 ANGLE = "angle_x"
 
 # 気圧計

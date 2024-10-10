@@ -5,7 +5,7 @@ from src.const import ANGLE, GYRO_X, TIMESTAMP
 
 
 class OrientationEstimator:
-    def __init__(self, drift_correction_factor: float = 0.01):
+    def __init__(self, drift_correction_factor: float = 0.01) -> None:
         self.drift_correction_factor = drift_correction_factor
 
     def estimate_orientation(self, gyro_data: pd.DataFrame) -> pd.DataFrame:

@@ -1,4 +1,4 @@
-from typing import Tuple
+from __future__ import annotations
 
 import pandas as pd
 from scipy import signal
@@ -39,21 +39,19 @@ def preprocess_data(
     filtered_data[TIMESTAMP] = data[TIMESTAMP]
 
     # Resample data
-    resampled_data = (
+    return (
         filtered_data.set_index(TIMESTAMP)
         .resample(f"{1/sampling_rate}S")
         .mean()
         .reset_index()
     )
 
-    return resampled_data
-
 
 def align_sensor_data(
     acc_data: pd.DataFrame,
     gyro_data: pd.DataFrame,
     baro_data: pd.DataFrame,
-) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """Align different sensor data based on their timestamps.
 
     Args:

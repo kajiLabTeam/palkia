@@ -1,6 +1,14 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
+
+if TYPE_CHECKING:
+    import pandas as pd
+
+    from src.utils.floor_map import FloorMap
 
 from src.const import (
     ACC_X,
@@ -17,9 +25,9 @@ from src.const import (
 
 def plot_trajectory(
     trajectory: pd.DataFrame,
-    ground_truth: pd.DataFrame = None,
-    floor_map: np.ndarray = None,
-):
+    ground_truth: pd.DataFrame | None = None,
+    floor_map: FloorMap | None = None,
+) -> None:
     """Plot the estimated trajectory, optionally with ground truth and floor map.
 
     Args:
@@ -33,8 +41,13 @@ def plot_trajectory(
 
     if floor_map is not None:
         plt.imshow(
-            np.rot90(floor_map),
-            extent=(0, floor_map.shape[0], 0, floor_map.shape[1]),
+            np.rot90(floor_map.floor_map_data),
+            extent=(
+                0,
+                floor_map.floor_map_data.shape[0] * floor_map.dx,
+                0,
+                floor_map.floor_map_data.shape[1] * floor_map.dy,
+            ),
             cmap="binary",
             alpha=0.5,
         )
@@ -76,7 +89,7 @@ def plot_sensor_data(
     acc_data: pd.DataFrame,
     gyro_data: pd.DataFrame,
     baro_data: pd.DataFrame,
-):
+) -> None:
     """Plot raw sensor data with increased spacing between subplots.
 
     Args:

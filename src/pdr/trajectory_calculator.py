@@ -25,26 +25,23 @@ class TrajectoryCalculator:
             "x": 0,
             "y": 0,
         }
-
         trajectory = pd.DataFrame(columns=[TIMESTAMP, "x", "y"])
-
         peek_orientation = TrajectoryCalculator.__match_data(
             orientation,
             pd.Series(steps_ts),
         )
-
         x_moves = self.step_length * np.cos(peek_orientation[ANGLE])
         y_moves = self.step_length * np.sin(peek_orientation[ANGLE])
-
-        return pd.concat(
-            [
-                trajectory,
-                pd.DataFrame(
-                    {
-                        TIMESTAMP: steps_ts,
-                        COORDINATE_X: x_moves.cumsum() + initial_point["x"],
-                        COORDINATE_Y: y_moves.cumsum() + initial_point["y"],
-                    },
-                ),
-            ],
+        # 新しいデータフレームを作成
+        new_trajectory = pd.DataFrame(
+            {
+                TIMESTAMP: steps_ts,
+                COORDINATE_X: x_moves.cumsum() + initial_point["x"],
+                COORDINATE_Y: y_moves.cumsum() + initial_point["y"],
+            },
         )
+        # 空のエントリを除外
+        new_trajectory = new_trajectory.dropna(how="all")
+
+        # 連結
+        return pd.concat([trajectory, new_trajectory])
