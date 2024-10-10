@@ -12,6 +12,7 @@ ruff = "^0.5.5"
 numpy = "^2.1.0"
 scipy = "^1.14.0"
 pandera = "^0.20.3"
+matplotlib = "^3.9.2"
 
 
 [build-system]
@@ -31,6 +32,7 @@ ignore = [
   "D107",
   "ANN101",
 ]
+unfixable = ["F401"]
 
 [tool.pyright]
 typeCheckingMode = "standard"
