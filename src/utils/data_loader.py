@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from collections import defaultdict
 from pathlib import Path
 
@@ -71,7 +73,16 @@ def read_log_data(log_file_path: str) -> dict:
     return data
 
 
-def load_sensor_data_from_log(log_file_path: str):
+def load_sensor_data_from_log(
+    log_file_path: str,
+) -> tuple[
+    pd.DataFrame,
+    pd.DataFrame,
+    pd.DataFrame,
+    pd.DataFrame,
+    pd.DataFrame,
+    pd.DataFrame,
+]:
     """Load sensor data from a log file.
 
     Args:
