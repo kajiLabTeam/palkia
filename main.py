@@ -2,9 +2,7 @@ import sys
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).resolve().parent / "src"))
-
-
-from src.const import FLOOR_MAP_PATH, FLOOR_NAME
+from src.const import FLOOR_MAP_PATH, FLOOR_NAME, LOG_FILE_PATH
 from src.pdr.orientation_estimator import OrientationEstimator
 from src.pdr.pdr_estimator import PDREstimator
 from src.pdr.step_detector import StepDetector
@@ -15,14 +13,11 @@ from src.utils.visualizer import plot_sensor_data, plot_trajectory
 
 
 def main() -> None:
-    # ログファイルからデータの読み込み
-    log_file_path = "data/raw/0_0_51.txt"  # ログファイルのパスを適切に設定してください
     acc_data, gyro_data, baro_data, mag_data, gt_data, ble_data = (
         load_sensor_data_from_log(
-            log_file_path,
+            LOG_FILE_PATH,
         )
     )
-
     # センサーデータの可視化
     plot_sensor_data(acc_data, gyro_data, mag_data)
 
@@ -37,7 +32,6 @@ def main() -> None:
         orientation_estimator,
         trajectory_calculator,
     )
-
     # 軌跡の推定
     trajectory = pdr_estimator.estimate_trajectory(acc_data, gyro_data)
 
@@ -46,7 +40,6 @@ def main() -> None:
         dx=0.01,
         dy=0.01,
     )
-
     #  推定軌跡の可視化
     plot_trajectory(trajectory, floor_map=floor_map)
 
