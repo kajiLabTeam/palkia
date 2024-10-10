@@ -2,7 +2,7 @@ import sys
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).resolve().parent / "src"))
-from src.const import FLOOR_MAP_PATH, FLOOR_NAME, LOG_FILE_PATH
+from src.const import FLOOR_MAP_PATH, FLOOR_NAME, LOG_FILE_PATH, POS_X, POS_Y
 from src.pdr.orientation_estimator import OrientationEstimator
 from src.pdr.pdr_estimator import PDREstimator
 from src.pdr.step_detector import StepDetector
@@ -19,12 +19,18 @@ def main() -> None:
         )
     )
     # センサーデータの可視化
-    plot_sensor_data(acc_data, gyro_data, mag_data)
+    # plot_sensor_data(acc_data, gyro_data, mag_data)
 
     #  PDRコンポーネントの初期化
     step_detector = StepDetector()
     orientation_estimator = OrientationEstimator()
-    trajectory_calculator = TrajectoryCalculator(step_length=0.5)
+    trajectory_calculator = TrajectoryCalculator(
+        step_length=0.5,
+        initial_point={
+            "x": gt_data[POS_X][0],
+            "y": gt_data[POS_Y][0],
+        },
+    )
 
     # PDR推定器の初期化
     pdr_estimator = PDREstimator(
