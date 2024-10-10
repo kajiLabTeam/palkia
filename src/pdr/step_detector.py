@@ -10,7 +10,7 @@ class StepDetector:
         self.peak_threshold = peak_threshold
         self.window_size = window_size
 
-    def detect_steps(self, acc_data: pd.DataFrame) -> np.ndarray:
+    def detect_steps_ts(self, acc_data: pd.DataFrame) -> np.ndarray:
         # 加速度の大きさを計算
         acc_magnitude = np.sqrt(
             acc_data[ACC_X] ** 2 + acc_data[ACC_Y] ** 2 + acc_data[ACC_Z] ** 2,
