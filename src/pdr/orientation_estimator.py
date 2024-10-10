@@ -2,13 +2,14 @@ import numpy as np
 import pandas as pd
 
 from src.const import ANGLE, GYRO_X, TIMESTAMP
+from src.utils.data_preprocessor import match_data
 
 
 class OrientationEstimator:
     def __init__(self, drift_correction_factor: float = 0.01) -> None:
         self.drift_correction_factor = drift_correction_factor
 
-    def estimate_orientation(self, gyro_data: pd.DataFrame) -> pd.DataFrame:
+    def __calculate_full_orientation(self, gyro_data: pd.DataFrame) -> pd.DataFrame:
         # 角速度を積分して角度を計算
         orientation = pd.DataFrame()
         orientation[TIMESTAMP] = gyro_data[TIMESTAMP]
@@ -24,3 +25,16 @@ class OrientationEstimator:
         # )
 
         return orientation
+
+    def estimate_step_orientation(
+        self,
+        gyro_data: pd.DataFrame,
+        step_times: pd.Series,
+    ) -> pd.DataFrame:
+        # 全体の方向を計算
+        full_orientation = self.__calculate_full_orientation(gyro_data)
+
+        # 歩行ステップ時の方向データを抽出
+        step_orientation = match_data(full_orientation, step_times)
+
+        return step_orientation

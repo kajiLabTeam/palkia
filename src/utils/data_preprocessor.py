@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import numpy as np
 import pandas as pd
 from scipy import signal
 
@@ -83,3 +84,30 @@ def align_sensor_data(
     )
 
     return acc_data, aligned_gyro, aligned_baro
+
+
+def match_data(
+    data_df: pd.DataFrame,
+    reference_times: pd.Series,
+    time_column: str = "ts",
+    tolerance: float = 0.005,
+) -> pd.DataFrame:
+    """時系列データから指定された時間に最も近いデータポイントを抽出します。.
+
+    Args:
+    ----
+        data_df (pd.DataFrame): 元のデータフレーム
+        reference_times (pd.Series): 抽出したい参照時間のシリーズ
+        time_column (str): データフレーム内の時間列の名前
+        tolerance (float): 時間の一致を判断する際の許容誤差 (秒)
+
+    Returns:
+    -------
+        pd.DataFrame: 抽出されたデータポイントを含むデータフレーム
+
+    """
+    matched_df = pd.DataFrame()
+    for t in reference_times:
+        matched_row = data_df[np.isclose(data_df[time_column], t, atol=tolerance)]
+        matched_df = pd.concat([matched_df, matched_row])
+    return matched_df.reset_index(drop=True)

@@ -21,9 +21,11 @@ class PDREstimator:
         acc_data: pd.DataFrame,
         gyro_data: pd.DataFrame,
     ) -> pd.DataFrame:
-        steps_ts = self.step_detector.detect_steps_ts(acc_data)
-        orientation = self.orientation_estimator.estimate_orientation(gyro_data)
+        step_times = self.step_detector.detect_step_times(acc_data)
+        step_orientation = self.orientation_estimator.estimate_step_orientation(
+            gyro_data,
+            pd.Series(step_times),
+        )
         return self.trajectory_calculator.calculate_trajectory(
-            steps_ts,
-            orientation,
+            step_orientation,
         )
