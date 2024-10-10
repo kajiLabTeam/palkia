@@ -24,13 +24,14 @@ extend-include = ["*.ipynb"]
 select = ["ALL"]
 ignore = [
   "E501",    # line too long, handled by black
-  "PLR0913",
-  "D100",
-  "D101",
-  "D102",
-  "D103",
-  "D107",
-  "ANN101",
+  "PLR0913", # too many arguments
+  "D100",    # undocumented-public-module
+  "D101",    # undocumented-public-class
+  "D102",    # undocumented-public-method
+  "D103",    # undocumented-public-function
+  "D104",    # undocumented-public-module
+  "D107",    # missing-docstring
+  "ANN101",  # missing type annotation for self in method
 ]
 unfixable = ["F401"]
 
