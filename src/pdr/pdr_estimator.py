@@ -27,5 +27,5 @@ class PDREstimator:
             steps_ts,
             orientation,
         )
-        print(trajectory)
+
         return trajectory

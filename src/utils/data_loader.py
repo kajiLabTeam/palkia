@@ -1,6 +1,8 @@
 from collections import defaultdict
 
+import numpy as np
 import pandas as pd
+from PIL import Image
 
 from src.const import (
     ACC_X,
@@ -93,3 +95,51 @@ def load_sensor_data_from_log(log_file_path: str):
     ble_df = data.get("BLUE", pd.DataFrame())
 
     return acc_df, gyro_df, mag_df, baro_df, gt_df, ble_df
+
+
+def load_floor_map(
+    floor_map_path: str,
+) -> np.ndarray:
+    """Load a floor map from the specified base path.
+
+    Args:
+    ----
+        floor_name (str): Name of the floor.
+        base_path (str): Base path of the floor maps.
+        optional_file_path (str): Optional file path to append to the base path.
+
+    Returns:
+    -------
+        np.ndarray: Floor map.
+
+    """
+    map_image_path = floor_map_path
+    map_image = Image.open(map_image_path)
+    return np.array(map_image, dtype=bool)
+
+
+def load_floor_maps(
+    floor_names: list,
+    base_path: str,
+    optional_file_path: str = "",
+) -> dict[str, np.ndarray]:
+    """Load floor maps from the specified base path.
+
+    Args:
+    ----
+        floor_names (list): List of floor names.
+        base_path (str): Base path of the floor maps.
+        optional_file_path (str): Optional file path to append to the base path.
+
+    Returns:
+    -------
+        dict[str, np.ndarray]: Dictionary mapping floor names to floor maps.
+
+    """
+    map_dict: dict[str, np.ndarray] = {}
+    for floor_name in floor_names:
+        map_image_path = f"{base_path}{floor_name}_0.01_0.01{optional_file_path}.bmp"
+        map_image = Image.open(map_image_path)
+        map_dict[floor_name] = np.array(map_image, dtype=bool)
+        print(map_dict[floor_name].shape)
+    return map_dict

@@ -5,21 +5,12 @@ import pandas as pd
 from src.const import (
     ACC_X,
     ACC_Y,
-    ACC_Z,
-    BLE_ADDRESS,
-    FLOOR_NAME,
+    COORDINATE_X,
+    COORDINATE_Y,
     GYRO_X,
     GYRO_Y,
     GYRO_Z,
-    POS_X,
-    POS_Y,
-    POS_Z,
     PRESSURE,
-    QUATERNION_0,
-    QUATERNION_1,
-    QUATERNION_2,
-    QUATERNION_3,
-    RSSI,
     TIMESTAMP,
 )
 
@@ -42,22 +33,28 @@ def plot_trajectory(
 
     if floor_map is not None:
         plt.imshow(
-            floor_map,
-            cmap="gray",
-            extent=[0, floor_map.shape[1], 0, floor_map.shape[0]],
+            np.rot90(floor_map),
+            extent=(0, floor_map.shape[0], 0, floor_map.shape[1]),
+            cmap="binary",
+            alpha=0.5,
         )
 
-    plt.plot(trajectory["x"], trajectory["y"], "r-", label="Estimated")
+    plt.plot(
+        trajectory[COORDINATE_X],
+        trajectory[COORDINATE_Y],
+        "r-",
+        label="Estimated",
+    )
     plt.scatter(
-        trajectory["x"].iloc[0],
-        trajectory["y"].iloc[0],
+        trajectory[COORDINATE_X].iloc[0],
+        trajectory[COORDINATE_Y].iloc[0],
         c="g",
         s=100,
         label="Start",
     )
     plt.scatter(
-        trajectory["x"].iloc[-1],
-        trajectory["y"].iloc[-1],
+        trajectory[COORDINATE_X].iloc[-1],
+        trajectory[COORDINATE_Y].iloc[-1],
         c="r",
         s=100,
         label="End",
@@ -70,7 +67,7 @@ def plot_trajectory(
     plt.ylabel("Y (m)")
     plt.title("Trajectory")
     plt.legend()
-    plt.grid(True)
+    plt.grid()
     plt.axis("equal")
     plt.show()
 

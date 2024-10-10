@@ -21,6 +21,7 @@ from .column_name import (
     RSSI,
     TIMESTAMP,
 )
+from .path import FLOOR_MAP_PATH
 
 __all__ = [
     "ACC_X",
@@ -44,4 +45,5 @@ __all__ = [
     "COORDINATE_X",
     "COORDINATE_Y",
     "ANGLE",
+    "FLOOR_MAP_PATH",
 ]
