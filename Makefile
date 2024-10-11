@@ -12,7 +12,7 @@ endif
 
 test:
 	poetry run pytest
-
+	
 lint:
 	poetry run ruff check src
 
@@ -28,7 +28,6 @@ format-fix:
 pyright:
 	poetry run pyright src
 
-
 clean:
 	find . -type f -name "*.pyc" -delete
 	find . -type d -name "__pycache__" -delete
@@ -36,12 +35,12 @@ clean:
 	rm -rf .mypy_cache
 
 run:
-	poetry run python src/main.py
+	poetry run python main.py
 
 docs:
 	poetry run pdoc --html --output-dir docs src
 
-check: lint test
+ci: lint format pyright
 
 # 開発環境のセットアップ
 setup: install
