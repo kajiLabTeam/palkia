@@ -11,8 +11,6 @@ numpy = "^2.1.0"
 scipy = "^1.14.0"
 matplotlib = "^3.9.2"
 pandas = "^2.2.3"
-
-
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.6.9"
 pytest = "^8.3.3"
@@ -24,7 +22,6 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.ruff]
 extend-include = ["*.ipynb"]
-
 [tool.ruff.lint]
 select = ["ALL"]
 ignore = [
@@ -39,7 +36,6 @@ ignore = [
   "ANN101",  # missing type annotation for self in method
   "D203",    # one-blank-line-before-class (競合解決のため)
   "D213",    # multi-line-summary-second-line (競合解決のため)
-
 ]
 unfixable = ["F401"]
 
