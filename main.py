@@ -30,7 +30,7 @@ def main() -> None:
     # plot_sensor_data(acc_data, gyro_data, mag_data)
 
     #  PDRコンポーネントの初期化
-    step_estimator = StepEstimator(step_length=0.5)
+    step_estimator = StepEstimator(step_length=DEFAULT_STEP_LENGTH)
     orientation_estimator = OrientationEstimator()
     trajectory_calculator = TrajectoryCalculator(
         initial_point={
