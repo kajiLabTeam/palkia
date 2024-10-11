@@ -89,7 +89,7 @@ def align_sensor_data(
 def match_data(
     data_df: pd.DataFrame,
     reference_times: pd.Series,
-    time_column: str = "ts",
+    time_column: str = TIMESTAMP,
     tolerance: float = 0.005,
 ) -> pd.DataFrame:
     """時系列データから指定された時間に最も近いデータポイントを抽出します。.
