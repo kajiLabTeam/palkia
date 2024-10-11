@@ -14,10 +14,17 @@ test:
 	poetry run pytest
 
 lint:
-	poetry run pylint src tests
+	poetry run ruff check src
+
+lint-fix:
+	poetry run ruff check src --fix
 
 format:
-	poetry run black src tests
+	poetry run ruff format --check src
+	
+format-fix:
+	poetry run ruff format src
+
 
 clean:
 	find . -type f -name "*.pyc" -delete
