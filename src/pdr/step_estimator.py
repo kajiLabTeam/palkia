@@ -5,7 +5,7 @@ from scipy.signal import find_peaks
 from src.const import ACC_X, ACC_Y, ACC_Z, TIMESTAMP
 
 
-class StepDetector:
+class StepEstimator:
     def __init__(self, peak_threshold: float = 12, window_size: int = 10) -> None:
         self.peak_threshold = peak_threshold
         self.window_size = window_size

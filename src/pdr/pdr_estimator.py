@@ -1,14 +1,14 @@
 import pandas as pd
 
 from .orientation_estimator import OrientationEstimator
-from .step_detector import StepDetector
+from .step_estimator import StepEstimator
 from .trajectory_calculator import TrajectoryCalculator
 
 
 class PDREstimator:
     def __init__(
         self,
-        step_detector: StepDetector,
+        step_detector: StepEstimator,
         orientation_estimator: OrientationEstimator,
         trajectory_calculator: TrajectoryCalculator,
     ) -> None:
