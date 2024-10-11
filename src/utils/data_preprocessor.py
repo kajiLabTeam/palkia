@@ -106,8 +106,25 @@ def match_data(
         pd.DataFrame: 抽出されたデータポイントを含むデータフレーム
 
     """
-    matched_df = pd.DataFrame()
+    # マッチした行を格納するためのリストを初期化
+    matched_rows = []
+
+    # 各参照時間に対してループ
     for t in reference_times:
+        # データフレームから、指定された時間に近いデータポイントを抽出
+        # np.isclose() を使用して、指定された許容誤差内のデータを選択
         matched_row = data_df[np.isclose(data_df[time_column], t, atol=tolerance)]
-        matched_df = pd.concat([matched_df, matched_row])
-    return matched_df.reset_index(drop=True)
+
+        # マッチした行が存在する場合のみ、リストに追加
+        if not matched_row.empty:
+            matched_rows.append(matched_row)
+
+    # マッチした行が1つ以上存在する場合
+    if matched_rows:
+        # すべてのマッチした行を1つのDataFrameに結合
+        # axis=0: 行方向(縦方向)に結合
+        # ignore_index=True: 元のインデックスを無視し、新しいインデックスを生成
+        return pd.concat(matched_rows, axis=0, ignore_index=True)
+
+    # マッチする行が1つも見つからなかった場合、空のDataFrameを返す
+    return pd.DataFrame()
