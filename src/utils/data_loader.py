@@ -27,8 +27,9 @@ from src.const import (
 )
 
 
-def read_log_data(log_file_path: str) -> dict:
-    data = defaultdict(list)
+def read_log_data(log_file_path: str) -> dict[str, pd.DataFrame]:
+    data: dict[str, list[dict[str, float | int | str]]] = defaultdict(list)
+
     with Path(log_file_path).open() as fp:
         for line in fp:
             line_contents = line.rstrip("\n").split(";")
@@ -50,7 +51,7 @@ def read_log_data(log_file_path: str) -> dict:
                 }
                 if data_type == "BARO":
                     record[PRESSURE] = float(line_contents[3])
-                data[data_type].append(record)
+                data[data_type].append(record)  # type: ignore[attr-defined]
             elif data_type == "POS3":
                 data["POS3"].append(
                     {
@@ -67,10 +68,7 @@ def read_log_data(log_file_path: str) -> dict:
                 )
 
     # Convert lists of dictionaries to DataFrames
-    for key in data:
-        data[key] = pd.DataFrame(data[key])  # type: ignore
-
-    return data
+    return {key: pd.DataFrame(value) for key, value in data.items()}
 
 
 def load_sensor_data_from_log(
