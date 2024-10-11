@@ -16,12 +16,12 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.12'  # あなたのプロジェクトのPythonバージョンに合わせて調整してください
+        python-version: '3.12'  
 
     - name: Install Poetry
       uses: snok/install-poetry@v1
       with:
-        version: 1.8.3  # Poetryのバージョンを指定。必要に応じて調整してください
+        version: 1.8.3  
 
     - name: Install dependencies
       run: poetry install --no-interaction --no-root
