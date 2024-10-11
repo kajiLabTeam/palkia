@@ -33,8 +33,8 @@ class TrajectoryCalculator:
         trajectory = pd.DataFrame(
             {
                 TIMESTAMP: step_orientation[TIMESTAMP],
-                COORDINATE_X: x_moves.cumsum() + self.initial_point["x"],
-                COORDINATE_Y: y_moves.cumsum() + self.initial_point["y"],
+                COORDINATE_X: self.initial_point["x"] + x_moves.cumsum(),
+                COORDINATE_Y: self.initial_point["y"] + y_moves.cumsum(),
             },
         )
         # 空のエントリを除外
