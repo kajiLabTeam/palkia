@@ -34,8 +34,12 @@ ignore = [
   "D104",    # undocumented-public-module
   "D107",    # missing-docstring
   "ANN101",  # missing type annotation for self in method
-  "D203",    # one-blank-line-before-class (競合解決のため)
-  "D213",    # multi-line-summary-second-line (競合解決のため)
+  "D203",    # one-blank-line-before-class (linter rule 競合解決のため)
+  "D213",    # multi-line-summary-second-line (linter rule 競合解決のため)
+  # formatとの競合を解消するため、以下のルールを無効化
+  "COM812", # Missing trailing comma in Python 3.6+
+  "ISC001", # Single line implicit string concatenation
+
 ]
 unfixable = ["F401"]
 
