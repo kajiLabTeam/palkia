@@ -10,6 +10,7 @@ python = "^3.12"
 numpy = "^2.1.0"
 scipy = "^1.14.0"
 matplotlib = "^3.9.2"
+pandas = "^2.2.3"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -23,6 +24,8 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.ruff]
 extend-include = ["*.ipynb"]
+
+[tool.ruff.lint]
 select = ["ALL"]
 ignore = [
   "E501",    # line too long, handled by black
@@ -34,6 +37,9 @@ ignore = [
   "D104",    # undocumented-public-module
   "D107",    # missing-docstring
   "ANN101",  # missing type annotation for self in method
+  "D203",    # one-blank-line-before-class (競合解決のため)
+  "D213",    # multi-line-summary-second-line (競合解決のため)
+
 ]
 unfixable = ["F401"]
 
