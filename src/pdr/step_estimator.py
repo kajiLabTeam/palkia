@@ -56,6 +56,6 @@ class StepEstimator:
         return self.step_length_model.predict(features)
 
     def __extract_features(
-        self, acc_data: pd.DataFrame, step_orientations: pd.DataFrame
+        self, _: pd.DataFrame, step_orientations: pd.DataFrame
     ) -> np.ndarray:
         return np.zeros((len(step_orientations), 10))  # ダミーの特徴量
