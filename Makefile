@@ -25,6 +25,9 @@ format:
 format-fix:
 	poetry run ruff format src
 
+pyright:
+	poetry run pyright src
+
 
 clean:
 	find . -type f -name "*.pyc" -delete
