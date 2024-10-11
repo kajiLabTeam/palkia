@@ -26,7 +26,7 @@ class OrientationEstimator:
 
         return orientation
 
-    def estimate_step_orientation(
+    def estimate_step_orientations(
         self,
         gyro_data: pd.DataFrame,
         step_times: pd.Series,

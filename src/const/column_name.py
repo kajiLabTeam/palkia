@@ -40,3 +40,7 @@ FLOOR_NAME = "floor_name"
 # 座標
 COORDINATE_X = "x"
 COORDINATE_Y = "y"
+
+
+# step
+STEP_LENGTH = "step_length"

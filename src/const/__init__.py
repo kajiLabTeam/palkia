@@ -19,8 +19,10 @@ from .column_name import (
     QUATERNION_2,
     QUATERNION_3,
     RSSI,
+    STEP_LENGTH,
     TIMESTAMP,
 )
+from .parameter import DEFAULT_STEP_LENGTH
 from .path import FLOOR_MAP_PATH, LOG_FILE_PATH
 
 __all__ = [
@@ -47,4 +49,6 @@ __all__ = [
     "ANGLE",
     "FLOOR_MAP_PATH",
     "LOG_FILE_PATH",
+    "STEP_LENGTH",
+    "DEFAULT_STEP_LENGTH",
 ]
