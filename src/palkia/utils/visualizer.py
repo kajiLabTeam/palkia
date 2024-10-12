@@ -8,9 +8,9 @@ import numpy as np
 if TYPE_CHECKING:
     import pandas as pd
 
-    from src.palkia.utils.floor_map import FloorMap
+    from palkia.utils.floor_map import FloorMap
 
-from src.palkia.const import (
+from palkia.const import (
     ACC_X,
     ACC_Y,
     ACC_Z,

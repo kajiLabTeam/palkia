@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from scipy.signal import find_peaks
 
-from src.palkia.const import (
+from palkia.const import (
     ACC_X,
     ACC_Y,
     ACC_Z,
