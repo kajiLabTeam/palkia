@@ -14,19 +14,19 @@ test:
 	poetry run pytest
 
 lint:
-	poetry run ruff check src
+	poetry run ruff check src/palkia
 
 lint-fix:
 	poetry run ruff check src --fix
 
 format:
-	poetry run ruff format --check src
+	poetry run ruff format --check src/palkia
 	
 format-fix:
-	poetry run ruff format src
+	poetry run ruff format src/palkia
 
 pyright:
-	poetry run pyright src
+	poetry run pyright src/palkia
 
 clean:
 	find . -type f -name "*.pyc" -delete
