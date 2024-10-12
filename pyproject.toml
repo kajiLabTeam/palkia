@@ -5,6 +5,7 @@ description = "indoor positioning library"
 authors = ["happy663 <tatu2425@gmail.com>"]
 readme = "README.md"
 packages = [{ include = "src" }]
+license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.12"
