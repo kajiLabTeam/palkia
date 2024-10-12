@@ -35,6 +35,7 @@ clean:
 	rm -rf .mypy_cache
 
 run:
+	cd src && \
 	poetry run python main.py
 
 docs:
