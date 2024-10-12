@@ -19,7 +19,7 @@ lint:
 lint-fix:
 	poetry run ruff check src --fix
 
-format:
+format-check:
 	poetry run ruff format --check src/palkia
 	
 format-fix:
@@ -49,7 +49,7 @@ release:
 docs:
 	poetry run pdoc --html --output-dir docs src
 
-ci: lint format pyright
+ci: lint format-check pyright
 
 # 開発環境のセットアップ
 setup: install

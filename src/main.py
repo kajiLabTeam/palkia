@@ -6,8 +6,6 @@ from palkia.const import (
     POS_X,
     POS_Y,
 )
-
-
 from palkia.positioning.pdr.orientation_estimator import OrientationEstimator
 from palkia.positioning.pdr.pdr_estimator import PDREstimator
 from palkia.positioning.pdr.step_estimator import StepEstimator

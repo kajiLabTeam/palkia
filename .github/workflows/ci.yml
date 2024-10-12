@@ -30,7 +30,7 @@ jobs:
         run: make lint
 
       - name: Check formatting
-        run: make check-format
+        run: make format-check
 
       - name: Run Pyright
         run: make pyright
