@@ -25,7 +25,7 @@ def main() -> None:
     )
 
     # センサーデータの可視化
-    # plot_sensor_data(acc_data, gyro_data, mag_data)
+    plot_sensor_data(acc_data, gyro_data)
 
     #  PDRコンポーネントの初期化
     step_estimator = StepEstimator(step_length=DEFAULT_STEP_LENGTH)
