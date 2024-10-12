@@ -1,7 +1,3 @@
-import sys
-from pathlib import Path
-
-sys.path.append(str(Path(__file__).resolve().parent / "src.palkia.positioning"))
 from src.palkia.const import (
     DEFAULT_STEP_LENGTH,
     FLOOR_MAP_PATH,
