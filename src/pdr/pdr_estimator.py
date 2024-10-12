@@ -29,7 +29,7 @@ class PDREstimator:
             pd.Series(step_times),
         )
         steps_lengths = self.step_estimator.estimate_steps(acc_data, step_orientations)
-        # step_orientationsとsteps_with_lengthsを結合
+        # step_orientationsとsteps_lengthsを結合
         steps_data = step_orientations.merge(steps_lengths, on=TIMESTAMP)
 
         return self.trajectory_calculator.calculate_trajectory(steps_data)
