@@ -27,10 +27,10 @@ jobs:
         run: poetry install --no-interaction --no-root
 
       - name: Run linter
-        run: poetry run ruff check src
+        run: make lint
 
       - name: Check formatting
-        run: poetry run ruff format --check src
+        run: make check-format
 
       - name: Run Pyright
-        run: poetry run pyright src
+        run: make pyright
