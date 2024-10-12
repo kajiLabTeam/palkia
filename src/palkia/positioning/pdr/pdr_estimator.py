@@ -1,6 +1,6 @@
 import pandas as pd
 
-from src.const.column_name import TIMESTAMP
+from src.palkia.const.column_name import TIMESTAMP
 
 from .orientation_estimator import OrientationEstimator
 from .step_estimator import StepEstimator

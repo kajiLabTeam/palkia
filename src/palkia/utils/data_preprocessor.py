@@ -4,9 +4,7 @@ import numpy as np
 import pandas as pd
 from scipy import signal
 
-from src.const import (
-    TIMESTAMP,
-)
+from src.palkia.const import TIMESTAMP
 
 
 def preprocess_data(

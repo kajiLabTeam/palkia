@@ -1,8 +1,8 @@
 import numpy as np
 import pandas as pd
 
-from src.const import ANGLE, GYRO_X, TIMESTAMP
-from src.utils.data_preprocessor import match_data
+from src.palkia.const import ANGLE, GYRO_X, TIMESTAMP
+from src.palkia.utils.data_preprocessor import match_data
 
 
 class OrientationEstimator:

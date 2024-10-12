@@ -1,8 +1,8 @@
 import sys
 from pathlib import Path
 
-sys.path.append(str(Path(__file__).resolve().parent / "src"))
-from src.const import (
+sys.path.append(str(Path(__file__).resolve().parent / "src.palkia.positioning"))
+from src.palkia.const import (
     DEFAULT_STEP_LENGTH,
     FLOOR_MAP_PATH,
     FLOOR_NAME,
@@ -10,13 +10,13 @@ from src.const import (
     POS_X,
     POS_Y,
 )
-from src.pdr.orientation_estimator import OrientationEstimator
-from src.pdr.pdr_estimator import PDREstimator
-from src.pdr.step_estimator import StepEstimator
-from src.pdr.trajectory_calculator import TrajectoryCalculator
-from src.utils.data_loader import load_sensor_data_from_log
-from src.utils.floor_map import FloorMap
-from src.utils.visualizer import plot_sensor_data, plot_trajectory
+from src.palkia.positioning.pdr.orientation_estimator import OrientationEstimator
+from src.palkia.positioning.pdr.pdr_estimator import PDREstimator
+from src.palkia.positioning.pdr.step_estimator import StepEstimator
+from src.palkia.positioning.pdr.trajectory_calculator import TrajectoryCalculator
+from src.palkia.utils.data_loader import load_sensor_data_from_log
+from src.palkia.utils.floor_map import FloorMap
+from src.palkia.utils.visualizer import plot_sensor_data, plot_trajectory
 
 
 def main() -> None:

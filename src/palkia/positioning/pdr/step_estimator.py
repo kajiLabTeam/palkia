@@ -6,7 +6,14 @@ import numpy as np
 import pandas as pd
 from scipy.signal import find_peaks
 
-from src.const import ACC_X, ACC_Y, ACC_Z, DEFAULT_STEP_LENGTH, STEP_LENGTH, TIMESTAMP
+from src.palkia.const import (
+    ACC_X,
+    ACC_Y,
+    ACC_Z,
+    DEFAULT_STEP_LENGTH,
+    STEP_LENGTH,
+    TIMESTAMP,
+)
 
 
 class Predictor(Protocol):
