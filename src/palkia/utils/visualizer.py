@@ -35,9 +35,9 @@ GROUND_TRUTH_STYLE = "--"
 
 def plot_trajectory(
     trajectory: pd.DataFrame,
+    *,
     ground_truth: pd.DataFrame | None = None,
     floor_map: FloorMap | None = None,
-    *,
     figsize: tuple[int, int] = FIGURE_SIZE,
     scatter_size: int = SCATTER_SIZE,
     start_point_color: str = START_POINT_COLOR,
