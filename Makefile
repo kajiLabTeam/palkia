@@ -38,6 +38,14 @@ run:
 	cd src && \
 	poetry run python main.py
 
+release:
+	poetry version patch
+	git add pyproject.toml dist
+	poetry build
+	git commit -m "Bump up version"
+	git push origin main
+	poetry publish
+
 docs:
 	poetry run pdoc --html --output-dir docs src
 
@@ -52,10 +60,6 @@ feature:
 	@read -p "Enter feature name: " name; \
 	git checkout -b feature/$$name
 
-# リリースブランチの作成
-release:
-	@read -p "Enter version number: " version; \
-	git checkout -b release/$$version
 
 # デプロイ（例：Herokuにデプロイする場合）
 deploy:
