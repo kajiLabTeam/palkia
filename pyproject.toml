@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "palkia"
-version = "0.2.1"
+version = "0.2.2"
 description = "indoor positioning library"
 authors = ["happy663 <tatu2425@gmail.com>"]
 readme = "README.md"
