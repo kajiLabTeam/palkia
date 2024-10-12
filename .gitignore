@@ -4,3 +4,5 @@ data/
 
 generate_project_summary.py
 pdr_project_summary.txt
+
+.pypirc
