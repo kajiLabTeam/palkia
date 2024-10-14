@@ -110,3 +110,35 @@ class StepEstimator:
 
         data = np.column_stack((acc_norm_smoothed, gyro_diff))
         return self.step_length_model.predict(data)
+
+    # orientationを使用してstep_lengthを推定する関数群
+
+    def estimate_steps_from_orientation(
+        self, acc_data: pd.DataFrame, orientation_data: pd.DataFrame
+    ) -> pd.DataFrame:
+        step_times = self.detect_step_times(acc_data)
+        step_lengths = self._estimate_step_lengths(
+            acc_data, orientation_data, step_times
+        )
+        return pd.DataFrame({TIMESTAMP: step_times, STEP_LENGTH: step_lengths})
+
+    def _estimate_step_lengths_from_orientation(
+        self,
+        acc_data: pd.DataFrame,
+        orientation_data: pd.DataFrame,
+        step_times: np.ndarray,
+    ) -> np.ndarray:
+        if self.step_length_model is None:
+            return np.full(len(step_times), self.step_length)
+
+        step_timings_acc = match_data(acc_data, pd.Series(step_times))
+        step_times_orientation = match_data(orientation_data, pd.Series(step_times))
+
+        acc_norm_smoothed = self._smooth_acceleration(
+            self._calculate_acceleration_norm(step_timings_acc)
+        )
+        orientations_diff = self._calculate_orientations_difference(
+            step_times_orientation
+        )
+
+        return self._predict_step_lengths(acc_norm_smoothed, orientations_diff)

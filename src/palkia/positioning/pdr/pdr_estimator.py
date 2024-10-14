@@ -33,3 +33,17 @@ class PDREstimator:
         steps_data = step_orientations.merge(steps_lengths, on=TIMESTAMP)
 
         return self.trajectory_calculator.calculate_trajectory(steps_data)
+
+    # orientationを使用して軌跡を推定する関数
+    def estimate_trajectory_from_orientation(
+        self,
+        acc_data: pd.DataFrame,
+        orientation_data: pd.DataFrame,
+    ) -> pd.DataFrame:
+        step_times = self.step_estimator.detect_step_times(acc_data)
+        step_lengths = self.step_estimator.estimate_steps_from_orientation(
+            acc_data, orientation_data
+        )
+        return self.trajectory_calculator.calculate_trajectory(
+            pd.DataFrame({TIMESTAMP: step_times, "step_length": step_lengths})
+        )
