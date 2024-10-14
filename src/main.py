@@ -7,6 +7,7 @@ from palkia.const import (
     POS_Y,
     STEP_LENGTH_MODEL_PATH,
 )
+from palkia.positioning.correction import DriftCorrector
 from palkia.positioning.pdr.orientation_estimator import OrientationEstimator
 from palkia.positioning.pdr.pdr_estimator import PDREstimator
 from palkia.positioning.pdr.step_estimator import StepEstimator
@@ -56,8 +57,14 @@ def main() -> None:
         dy=0.01,
     )
 
+    # plot_trajectory(trajectory, floor_map=floor_map)
+
+    correct_trajectory = DriftCorrector(
+        config={}, pdr_estimator=pdr_estimator, gt_data=gt_data
+    ).correct(gyro_data, acc_data)
+
     #  推定軌跡の可視化
-    plot_trajectory(trajectory, floor_map=floor_map)
+    plot_trajectory(correct_trajectory, floor_map=floor_map)
 
     # # Ground truthとの比較（オプション）
     # if not gt_data.empty:

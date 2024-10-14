@@ -4,109 +4,112 @@ import numpy as np
 import pandas as pd
 from scipy.spatial import cKDTree
 
+from palkia.positioning.pdr import PDREstimator
+from palkia.utils.floor_map import FloorMap
+
 
 class MapMatcher:
-    def __init__(self, config: Dict[str, Any]):
+    def __init__(
+        self, config: Dict[str, Any], pdr_estimator: PDREstimator, floor_map: FloorMap
+    ) -> None:
         self.config = config
-        self.map_data = self._load_map_data(config.get("map_file"))
-        self.grid_size = config.get("grid_size", 0.5)  # メートル単位のグリッドサイズ
-        self.max_search_distance = config.get(
-            "max_search_distance", 5
-        )  # 最大探索距離（メートル）
-        self.kdtree = self._build_kdtree()
+        self.floor_map = floor_map
+        self.pdrEstimator = pdr_estimator
 
-    def _load_map_data(self, map_file: str) -> np.ndarray:
-        """地図データを読み込む"""
-        # 注: 実際の実装では、適切な地図データフォーマットに合わせて読み込みロジックを実装する必要があります
-        return np.load(map_file)
-
-    def _build_kdtree(self) -> cKDTree:
-        """歩行可能な点のKDツリーを構築する"""
-        walkable_points = np.argwhere(self.map_data == 1)  # 1を歩行可能とする
-        return cKDTree(walkable_points * self.grid_size)
-
-    def match(self, trajectory: pd.DataFrame) -> pd.DataFrame:
-        """軌跡を地図にマッチングする
-
-        Args:
-            trajectory (pd.DataFrame): マッチングする軌跡
-
-        Returns:
-            pd.DataFrame: マッチングされた軌跡
-
-        """
-        matched_trajectory = trajectory.copy()
-        for i, point in trajectory.iterrows():
-            matched_point = self._match_point(point["x"], point["y"])
-            matched_trajectory.at[i, "x"] = matched_point[0]
-            matched_trajectory.at[i, "y"] = matched_point[1]
-        return matched_trajectory
-
-    def _match_point(self, x: float, y: float) -> Tuple[float, float]:
-        """単一の点を最も近い歩行可能な点にマッチングする"""
-        distance, index = self.kdtree.query(
-            [x, y], distance_upper_bound=self.max_search_distance
+    def _find_best_alignment_angle(
+        self,
+        acc_df: pd.DataFrame,
+        angle_df: pd.DataFrame,
+        ground_truth_first_point: dict[Axis2D, float],
+    ) -> float:
+        angle_range = np.arange(0, 2 * np.pi, 0.01)
+        results = [
+            self._calculate_horizontal_and_vertical_counts(angle_df, rotate_angle)
+            for rotate_angle in angle_range
+        ]
+        df_results = pd.DataFrame(results).sort_values(
+            by="horizontal_and_vertical_count",
+            ascending=False,
         )
-        if np.isinf(distance):
-            return x, y  # マッチする点が見つからない場合は元の点を返す
-        matched_point = self.kdtree.data[index] * self.grid_size
-        return matched_point[0], matched_point[1]
+        df_results = df_results.reset_index(drop=True)
+        df_results = self._calculate_exist_counts(
+            angle_df,
+            df_results,
+            ground_truth_first_point,
+        )
+        return self._get_optimal_angle(df_results)
 
-    def correct_trajectory(self, trajectory: pd.DataFrame) -> pd.DataFrame:
-        """軌跡を補正する
-
-        Args:
-            trajectory (pd.DataFrame): 補正する軌跡
-
-        Returns:
-            pd.DataFrame: 補正された軌跡
-
-        """
-        corrected_trajectory = trajectory.copy()
-        for i in range(len(corrected_trajectory)):
-            if not self.is_walkable(
-                corrected_trajectory.at[i, "x"], corrected_trajectory.at[i, "y"]
-            ):
-                nearest_walkable = self._find_nearest_walkable(
-                    corrected_trajectory.at[i, "x"], corrected_trajectory.at[i, "y"]
-                )
-                corrected_trajectory.at[i, "x"] = nearest_walkable[0]
-                corrected_trajectory.at[i, "y"] = nearest_walkable[1]
-        return corrected_trajectory
-
-    def is_walkable(self, x: float, y: float) -> bool:
-        """指定された座標が歩行可能かどうかを判定する"""
-        grid_x, grid_y = int(x / self.grid_size), int(y / self.grid_size)
-        if (
-            0 <= grid_x < self.map_data.shape[0]
-            and 0 <= grid_y < self.map_data.shape[1]
-        ):
-            return self.map_data[grid_x, grid_y] == 1
-        return False
-
-    def _find_nearest_walkable(self, x: float, y: float) -> Tuple[float, float]:
-        """最も近い歩行可能な点を見つける"""
-        distance, index = self.kdtree.query([x, y])
-        nearest_point = self.kdtree.data[index] * self.grid_size
-        return nearest_point[0], nearest_point[1]
-
-    def smooth_trajectory(
-        self, trajectory: pd.DataFrame, window_size: int = 5
+    def _calculate_exist_counts(
+        self,
+        acc_df: pd.DataFrame,
+        angle_df: pd.DataFrame,
+        results: pd.DataFrame,
+        ground_truth_first_point: dict[Axis2D, float],
     ) -> pd.DataFrame:
-        """軌跡を平滑化する
+        for i, row in results.head(20).iterrows():
+            rotated_displacement = PDREstimator.estimate_trajectory_from_orientation(
+                angle_df.ts,
+                (angle_df["x"] + row["angle"]),
+                0.5,
+                {
+                    "x": ground_truth_first_point["x"],
+                    "y": ground_truth_first_point["y"],
+                },
+            )
 
-        Args:
-            trajectory (pd.DataFrame): 平滑化する軌跡
-            window_size (int): 移動平均のウィンドウサイズ
+            exist_count = 0
+            for _, displacement_row in rotated_displacement.iterrows():
+                if _is_passable(
+                    edit_map_dict,
+                    floor_name,
+                    displacement_row["x_displacement"],
+                    displacement_row["y_displacement"],
+                    dx,
+                    dy,
+                ):
+                    exist_count += 1
 
-        Returns:
-            pd.DataFrame: 平滑化された軌跡
+            results.at[i, "exist_count"] = exist_count
 
-        """
-        smoothed = trajectory.copy()
-        smoothed[["x", "y"]] = (
-            smoothed[["x", "y"]]
-            .rolling(window=window_size, center=True, min_periods=1)
-            .mean()
+        return results
+
+    def _calculate_horizontal_and_vertical_counts(
+        self,
+        angle_df: pd.DataFrame,
+        rotate_angle: float,
+    ) -> dict[str, int | float]:
+        rotated_angle = (angle_df["x"] + rotate_angle) % (2 * np.pi)
+
+        vertical_count = len(
+            rotated_angle[
+                (
+                    (rotated_angle >= np.pi / 2 - 0.1)
+                    & (rotated_angle <= np.pi / 2 + 0.1)
+                )
+                | (
+                    (rotated_angle >= 3 * np.pi / 2 - 0.1)
+                    & (rotated_angle <= 3 * np.pi / 2 + 0.1)
+                )
+            ],
         )
-        return smoothed
+
+        horizontal_count = len(
+            rotated_angle[
+                ((rotated_angle <= 0.1) | (rotated_angle >= 2 * np.pi - 0.1))
+                | ((rotated_angle >= np.pi - 0.1) & (rotated_angle <= np.pi + 0.1))
+            ],
+        )
+
+        return {
+            "angle": rotate_angle,
+            "horizontal_and_vertical_count": horizontal_count + vertical_count,
+        }
+
+    def _get_optimal_angle(self, results: pd.DataFrame) -> float:
+        max_exist_count = results["exist_count"].max()
+        optimal_result = (
+            results[results["exist_count"] == max_exist_count]
+            .sort_values(by="horizontal_and_vertical_count", ascending=False)
+            .iloc[0]
+        )
+        return optimal_result["angle"]
