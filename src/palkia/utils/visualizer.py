@@ -43,8 +43,6 @@ def plot_trajectory(
     start_point_color: str = START_POINT_COLOR,
     end_point_color: str = END_POINT_COLOR,
     start_end_point_size: int = STRAT_END_POINT_SIZE,
-    ground_truth_color: str = GROUND_TRUTH_COLOR,
-    ground_truth_style: str = GROUND_TRUTH_STYLE,
 ) -> None:
     """Plot the estimated trajectory, optionally with ground truth and floor map.
 
@@ -74,7 +72,7 @@ def plot_trajectory(
     )
 
     if ground_truth is not None:
-        _plot_ground_truth(ground_truth, ground_truth_color, ground_truth_style)
+        _plot_ground_truth(ground_truth)
 
     if floor_map is not None:
         _plot_floor_map(floor_map)
@@ -124,14 +122,11 @@ def _plot_start_end_points(
 
 def _plot_ground_truth(
     ground_truth: pd.DataFrame,
-    color: str = GROUND_TRUTH_COLOR,
-    style: str = GROUND_TRUTH_STYLE,
 ) -> None:
     """Plot the ground truth trajectory."""
     plt.plot(
         ground_truth["x"],
         ground_truth["y"],
-        f"{color}{style}",
         label="Ground Truth",
     )
 

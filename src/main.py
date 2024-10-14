@@ -31,6 +31,7 @@ def main() -> None:
         step_length=DEFAULT_STEP_LENGTH,
         step_length_model_path=STEP_LENGTH_MODEL_PATH,
     )
+
     orientation_estimator = OrientationEstimator()
     trajectory_calculator = TrajectoryCalculator(
         initial_point={
@@ -55,6 +56,7 @@ def main() -> None:
         dx=0.01,
         dy=0.01,
     )
+
     #  推定軌跡の可視化
     plot_trajectory(trajectory, floor_map=floor_map)
 

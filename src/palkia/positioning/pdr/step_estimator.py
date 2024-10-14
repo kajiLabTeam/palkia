@@ -39,7 +39,8 @@ class StepEstimator:
         try:
             self.step_length_model = joblib.load(model_path)
         except Exception as e:
-            raise ValueError(f"Failed to load model from {model_path}: {e!s}")
+            msg = f"Failed to load model from {model_path}: {e!s}"
+            raise ValueError(msg) from e
 
     def estimate_steps(
         self, acc_data: pd.DataFrame, gyro_data: pd.DataFrame
@@ -63,8 +64,10 @@ class StepEstimator:
             acc_data[ACC_X] ** 2 + acc_data[ACC_Y] ** 2 + acc_data[ACC_Z] ** 2
         )
 
-    def _smooth_acceleration(self, acc_norm: np.ndarray) -> pd.Series:
-        return pd.Series(acc_norm).rolling(window=self.window_size).mean()
+    # 移動平均を計算
+    def _smooth_acceleration(self, acc_norm: np.ndarray) -> np.ndarray:
+        kernel = np.ones(self.window_size) / self.window_size
+        return np.convolve(acc_norm, kernel, mode="same")
 
     def _estimate_step_lengths(
         self, acc_data: pd.DataFrame, gyro_data: pd.DataFrame, step_times: np.ndarray
@@ -88,7 +91,8 @@ class StepEstimator:
         self, acc_norm: np.ndarray, gyro_diff: np.ndarray
     ) -> np.ndarray:
         if self.step_length_model is None:
-            raise ValueError("Step length model is not loaded")
+            msg = "Step length model is not loaded."
+            raise ValueError(msg)
 
         data = np.column_stack((acc_norm, gyro_diff))
         return self.step_length_model.predict(data)
