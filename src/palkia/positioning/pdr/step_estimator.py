@@ -64,7 +64,7 @@ class StepEstimator:
             acc_data[ACC_X] ** 2 + acc_data[ACC_Y] ** 2 + acc_data[ACC_Z] ** 2
         )
 
-    # 移動平均を計算
+    # 平滑化
     def _smooth_acceleration(self, acc_norm: np.ndarray) -> np.ndarray:
         kernel = np.ones(self.window_size) / self.window_size
         return np.convolve(acc_norm, kernel, mode="same")
@@ -78,10 +78,12 @@ class StepEstimator:
         acc_data_step_timings = match_data(acc_data, pd.Series(step_times))
         gyro_data_step_timings = match_data(gyro_data, pd.Series(step_times))
 
-        acc_norm = self._calculate_acceleration_norm(acc_data_step_timings)
+        acc_smoothed = self._smooth_acceleration(
+            self._calculate_acceleration_norm(acc_data_step_timings)
+        )
         gyro_diff = self._calculate_gyro_difference(gyro_data_step_timings)
 
-        return self._predict_step_lengths(acc_norm, gyro_diff)
+        return self._predict_step_lengths(acc_smoothed, gyro_diff)
 
     def _calculate_gyro_difference(self, gyro_data: pd.DataFrame) -> np.ndarray:
         gyro_diff = np.diff(gyro_data[GYRO_X])
