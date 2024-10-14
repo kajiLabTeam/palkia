@@ -78,23 +78,23 @@ class StepEstimator:
         acc_data_step_timings = match_data(acc_data, pd.Series(step_times))
         gyro_data_step_timings = match_data(gyro_data, pd.Series(step_times))
 
-        acc_smoothed = self._smooth_acceleration(
+        acc_norm_smoothed = self._smooth_acceleration(
             self._calculate_acceleration_norm(acc_data_step_timings)
         )
         gyro_diff = self._calculate_gyro_difference(gyro_data_step_timings)
 
-        return self._predict_step_lengths(acc_smoothed, gyro_diff)
+        return self._predict_step_lengths(acc_norm_smoothed, gyro_diff)
 
     def _calculate_gyro_difference(self, gyro_data: pd.DataFrame) -> np.ndarray:
         gyro_diff = np.diff(gyro_data[GYRO_X])
         return np.insert(gyro_diff, 0, np.mean(gyro_diff))
 
     def _predict_step_lengths(
-        self, acc_norm: np.ndarray, gyro_diff: np.ndarray
+        self, acc_norm_smoothed: np.ndarray, gyro_diff: np.ndarray
     ) -> np.ndarray:
         if self.step_length_model is None:
             msg = "Step length model is not loaded."
             raise ValueError(msg)
 
-        data = np.column_stack((acc_norm, gyro_diff))
+        data = np.column_stack((acc_norm_smoothed, gyro_diff))
         return self.step_length_model.predict(data)
