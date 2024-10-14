@@ -117,7 +117,7 @@ class StepEstimator:
         self, acc_data: pd.DataFrame, orientation_data: pd.DataFrame
     ) -> pd.DataFrame:
         step_times = self.detect_step_times(acc_data)
-        step_lengths = self._estimate_step_lengths(
+        step_lengths = self._estimate_step_lengths_from_orientation(
             acc_data, orientation_data, step_times
         )
         return pd.DataFrame({TIMESTAMP: step_times, STEP_LENGTH: step_lengths})

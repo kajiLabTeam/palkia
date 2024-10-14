@@ -1,6 +1,7 @@
 import pandas as pd
 
 from palkia.const.column_name import TIMESTAMP
+from palkia.utils.data_preprocessor import match_data
 
 from .orientation_estimator import OrientationEstimator
 from .step_estimator import StepEstimator
@@ -44,6 +45,8 @@ class PDREstimator:
         step_lengths = self.step_estimator.estimate_steps_from_orientation(
             acc_data, orientation_data
         )
-        return self.trajectory_calculator.calculate_trajectory(
-            pd.DataFrame({TIMESTAMP: step_times, "step_length": step_lengths})
-        )
+        step_times_orientation = match_data(orientation_data, pd.Series(step_times))
+
+        step_data = step_times_orientation.merge(step_lengths, on=TIMESTAMP)
+
+        return self.trajectory_calculator.calculate_trajectory(step_data)
