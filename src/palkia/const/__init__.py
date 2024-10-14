@@ -23,7 +23,7 @@ from .column_name import (
     TIMESTAMP,
 )
 from .parameter import DEFAULT_STEP_LENGTH
-from .path import FLOOR_MAP_PATH, LOG_FILE_PATH
+from .path import FLOOR_MAP_PATH, LOG_FILE_PATH, STEP_LENGTH_MODEL_PATH
 
 __all__ = [
     "ACC_X",
@@ -51,4 +51,5 @@ __all__ = [
     "LOG_FILE_PATH",
     "STEP_LENGTH",
     "DEFAULT_STEP_LENGTH",
+    "STEP_LENGTH_MODEL_PATH",
 ]

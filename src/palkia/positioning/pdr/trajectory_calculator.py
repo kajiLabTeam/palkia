@@ -16,8 +16,9 @@ class TrajectoryCalculator:
         self.initial_point = initial_point or {"x": 0, "y": 0}
 
     def calculate_trajectory(self, steps_data: pd.DataFrame) -> pd.DataFrame:
-        x_moves = steps_data[STEP_LENGTH] * np.cos(steps_data[ANGLE])
-        y_moves = steps_data[STEP_LENGTH] * np.sin(steps_data[ANGLE])
+        PLUS_ANGLE = 1.5
+        x_moves = steps_data[STEP_LENGTH] * np.cos(steps_data[ANGLE] + PLUS_ANGLE)
+        y_moves = steps_data[STEP_LENGTH] * np.sin(steps_data[ANGLE] + PLUS_ANGLE)
 
         initial_point_df = pd.DataFrame(
             {

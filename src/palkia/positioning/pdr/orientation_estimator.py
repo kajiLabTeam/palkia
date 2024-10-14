@@ -33,6 +33,5 @@ class OrientationEstimator:
     ) -> pd.DataFrame:
         # 全体の方向を計算
         full_orientation = self.__calculate_full_orientation(gyro_data)
-
         # 歩行ステップ時の方向データを抽出
         return match_data(full_orientation, step_times)

@@ -5,6 +5,7 @@ from palkia.const import (
     LOG_FILE_PATH,
     POS_X,
     POS_Y,
+    STEP_LENGTH_MODEL_PATH,
 )
 from palkia.positioning.pdr.orientation_estimator import OrientationEstimator
 from palkia.positioning.pdr.pdr_estimator import PDREstimator
@@ -26,7 +27,10 @@ def main() -> None:
     plot_sensor_data(acc_data, gyro_data)
 
     #  PDRコンポーネントの初期化
-    step_estimator = StepEstimator(step_length=DEFAULT_STEP_LENGTH)
+    step_estimator = StepEstimator(
+        step_length=DEFAULT_STEP_LENGTH,
+        step_length_model_path=STEP_LENGTH_MODEL_PATH,
+    )
     orientation_estimator = OrientationEstimator()
     trajectory_calculator = TrajectoryCalculator(
         initial_point={
@@ -41,6 +45,7 @@ def main() -> None:
         orientation_estimator,
         trajectory_calculator,
     )
+
     # 軌跡の推定
     trajectory = pdr_estimator.estimate_trajectory(acc_data, gyro_data)
 
