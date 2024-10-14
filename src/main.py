@@ -59,8 +59,8 @@ def main() -> None:
     plot_trajectory(trajectory, floor_map=floor_map)
 
     # # Ground truthとの比較（オプション）
-    # if not gt_data.empty:
-    #     plot_trajectory(trajectory, ground_truth=gt_data)
+    if not gt_data.empty:
+        plot_trajectory(trajectory, ground_truth=gt_data)
 
 
 if __name__ == "__main__":
