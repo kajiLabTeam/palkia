@@ -11,11 +11,13 @@ from palkia.const import (
     ACC_X,
     ACC_Y,
     ACC_Z,
+    ANGLE,
     DEFAULT_STEP_LENGTH,
     GYRO_X,
     STEP_LENGTH,
     TIMESTAMP,
 )
+from palkia.positioning.pdr.orientation_estimator import OrientationEstimator
 from palkia.utils.data_preprocessor import match_data
 
 
@@ -75,19 +77,29 @@ class StepEstimator:
         if self.step_length_model is None:
             return np.full(len(step_times), self.step_length)
 
-        acc_data_step_timings = match_data(acc_data, pd.Series(step_times))
-        gyro_data_step_timings = match_data(gyro_data, pd.Series(step_times))
+        step_timings_acc = match_data(acc_data, pd.Series(step_times))
+        step_timings_orientations = OrientationEstimator().estimate_step_orientations(
+            gyro_data, pd.Series(step_times)
+        )
 
         acc_norm_smoothed = self._smooth_acceleration(
-            self._calculate_acceleration_norm(acc_data_step_timings)
+            self._calculate_acceleration_norm(step_timings_acc)
         )
-        gyro_diff = self._calculate_gyro_difference(gyro_data_step_timings)
+        orientations_diff = self._calculate_orientations_difference(
+            step_timings_orientations
+        )
 
-        return self._predict_step_lengths(acc_norm_smoothed, gyro_diff)
+        return self._predict_step_lengths(acc_norm_smoothed, orientations_diff)
 
     def _calculate_gyro_difference(self, gyro_data: pd.DataFrame) -> np.ndarray:
         gyro_diff = np.diff(gyro_data[GYRO_X])
         return np.insert(gyro_diff, 0, np.mean(gyro_diff))
+
+    def _calculate_orientations_difference(
+        self, orientations_data: pd.DataFrame
+    ) -> np.ndarray:
+        orientations_diff = np.diff(orientations_data[ANGLE])
+        return np.insert(orientations_diff, 0, np.mean(orientations_diff))
 
     def _predict_step_lengths(
         self, acc_norm_smoothed: np.ndarray, gyro_diff: np.ndarray
