@@ -62,7 +62,7 @@ def main() -> None:
         dy=0.01,
     )
 
-    # plot_trajectory(trajectory, floor_map=floor_map)
+    plot_trajectory(trajectory, floor_map=floor_map)
 
     correct_trajectory = DriftCorrector(
         config={}, pdr_estimator=pdr_estimator, gt_data=gt_data

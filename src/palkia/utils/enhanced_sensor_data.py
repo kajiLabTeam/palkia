@@ -20,6 +20,7 @@ class EnhancedSensorData:
     def __init__(self, acc_df: pd.DataFrame, gyro_df: pd.DataFrame) -> None:
         self.acc_df = self._validate_and_process_acc(acc_df)
         self.gyro_df = self._validate_and_process_gyro(gyro_df)
+        self.orrientation_df = None
         self._sync_timestamps()
 
     @staticmethod
