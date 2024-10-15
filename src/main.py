@@ -13,6 +13,7 @@ from palkia.positioning.pdr.pdr_estimator import PDREstimator
 from palkia.positioning.pdr.step_estimator import StepEstimator
 from palkia.positioning.pdr.trajectory_calculator import TrajectoryCalculator
 from palkia.utils.data_loader import load_sensor_data_from_log
+from palkia.utils.enhanced_sensor_data import EnhancedSensorData
 from palkia.utils.floor_map import FloorMap
 from palkia.utils.visualizer import plot_sensor_data, plot_trajectory
 
@@ -27,11 +28,14 @@ def main() -> None:
     # センサーデータの可視化
     # plot_sensor_data(acc_data, gyro_data)
 
+    sensor_data = EnhancedSensorData(
+        acc_data,
+        gyro_data,
+    )
     #  PDRコンポーネントの初期化
     step_estimator = StepEstimator(
         step_length_model_path=STEP_LENGTH_MODEL_PATH,
     )
-
     orientation_estimator = OrientationEstimator()
     trajectory_calculator = TrajectoryCalculator(
         initial_point={
@@ -42,13 +46,14 @@ def main() -> None:
 
     # PDR推定器の初期化
     pdr_estimator = PDREstimator(
+        sensor_data,
         step_estimator,
         orientation_estimator,
         trajectory_calculator,
     )
 
     # 軌跡の推定
-    trajectory = pdr_estimator.estimate_trajectory(acc_data, gyro_data)
+    trajectory = pdr_estimator.estimate_trajectory()
 
     floor_map = FloorMap(
         floor_name=gt_data[FLOOR_NAME][0],
@@ -61,7 +66,7 @@ def main() -> None:
 
     correct_trajectory = DriftCorrector(
         config={}, pdr_estimator=pdr_estimator, gt_data=gt_data
-    ).correct(gyro_data, acc_data)
+    ).correct(gyro_data)
 
     #  推定軌跡の可視化
     plot_trajectory(correct_trajectory, floor_map=floor_map)

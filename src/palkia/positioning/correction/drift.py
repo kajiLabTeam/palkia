@@ -26,12 +26,14 @@ class DriftCorrector:
         self.drift_search_range = config.get("drift_search_range", (-0.05, 0.05))
         self.drift_search_step = config.get("drift_search_step", 0.001)
 
-    def correct(self, gyro_df: pd.DataFrame, acc_df: pd.DataFrame) -> pd.DataFrame:
+    def correct(self, gyro_df: pd.DataFrame) -> pd.DataFrame:
         angle_df = self._convert_gyro_to_angle(gyro_df)
-        optimal_drift = self._search_optimal_drift_from_angle(acc_df, angle_df)
+        optimal_drift = self._search_optimal_drift_from_angle(
+            self.pdr_estimator.enhanced_sensor_data.acc_df, angle_df
+        )
         corrected_angle_df = self._apply_drift_correction(angle_df, optimal_drift)
         return self.pdr_estimator.estimate_trajectory_from_orientation(
-            acc_df, corrected_angle_df
+            corrected_angle_df
         )
 
     @staticmethod
@@ -67,7 +69,7 @@ class DriftCorrector:
         def evaluate_drift(drift: float) -> float:
             adjusted_angle = self._apply_drift_correction(angle_df, drift)
             displacement_df = self.pdr_estimator.estimate_trajectory_from_orientation(
-                acc_df, adjusted_angle
+                adjusted_angle
             )
             return self._compute_euclidean_distance(
                 displacement_df, self.gt_data.iloc[1]
