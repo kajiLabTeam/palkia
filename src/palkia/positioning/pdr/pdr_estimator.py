@@ -56,3 +56,12 @@ class PDREstimator:
         step_data = step_times_orientation.merge(step_lengths, on=TIMESTAMP)
 
         return self.trajectory_calculator.calculate_trajectory(step_data)
+
+    def estimate_step_times_orientations(
+        self,
+        orientation_data: pd.DataFrame,
+    ) -> pd.DataFrame:
+        step_times = self.step_estimator.detect_step_times(
+            self.enhanced_sensor_data.acc_df,
+        )
+        return match_data(orientation_data, pd.Series(step_times))

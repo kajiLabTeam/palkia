@@ -1,11 +1,16 @@
-from typing import Any, Dict, List, Tuple
+from __future__ import annotations
+
+from typing import Any, Dict, Literal
 
 import numpy as np
 import pandas as pd
 from scipy.spatial import cKDTree
 
+from palkia.const import ANGLE, COORDINATE_X, COORDINATE_Y, TIMESTAMP
 from palkia.positioning.pdr import PDREstimator
 from palkia.utils.floor_map import FloorMap
+
+Axis2D = Literal["x", "y"]
 
 
 class MapMatcher:
@@ -16,11 +21,33 @@ class MapMatcher:
         self.floor_map = floor_map
         self.pdrEstimator = pdr_estimator
 
-    def _find_best_alignment_angle(
+    def correct_initial_direction(self) -> pd.DataFrame:
+        if self.pdrEstimator.enhanced_sensor_data.corrected_orrientation_df is None:
+            msg = "Corrected orientation data is required for initial direction correction"
+            raise ValueError(msg)
+
+        step_times_orientations = self.pdrEstimator.estimate_step_times_orientations(
+            self.pdrEstimator.enhanced_sensor_data.corrected_orrientation_df
+        )
+        # 初期方向の推定
+        rotate_best_initial_direction = self.find_best_initial_direction(
+            step_times_orientations
+        )
+
+        corrected_angle_df = pd.DataFrame(
+            {
+                TIMESTAMP: step_times_orientations[TIMESTAMP],
+                ANGLE: (step_times_orientations[ANGLE]) + rotate_best_initial_direction,
+            }
+        )
+
+        return self.pdrEstimator.estimate_trajectory_from_orientation(
+            corrected_angle_df
+        )
+
+    def find_best_initial_direction(
         self,
-        acc_df: pd.DataFrame,
         angle_df: pd.DataFrame,
-        ground_truth_first_point: dict[Axis2D, float],
     ) -> float:
         angle_range = np.arange(0, 2 * np.pi, 0.01)
         results = [
@@ -32,40 +59,29 @@ class MapMatcher:
             ascending=False,
         )
         df_results = df_results.reset_index(drop=True)
+
         df_results = self._calculate_exist_counts(
             angle_df,
             df_results,
-            ground_truth_first_point,
         )
+        print(df_results)
         return self._get_optimal_angle(df_results)
 
     def _calculate_exist_counts(
         self,
-        acc_df: pd.DataFrame,
         angle_df: pd.DataFrame,
         results: pd.DataFrame,
-        ground_truth_first_point: dict[Axis2D, float],
     ) -> pd.DataFrame:
         for i, row in results.head(20).iterrows():
-            rotated_displacement = PDREstimator.estimate_trajectory_from_orientation(
-                angle_df.ts,
-                (angle_df["x"] + row["angle"]),
-                0.5,
-                {
-                    "x": ground_truth_first_point["x"],
-                    "y": ground_truth_first_point["y"],
-                },
+            rotated_displacement = (
+                self.pdrEstimator.estimate_trajectory_from_orientation(angle_df)
             )
 
             exist_count = 0
             for _, displacement_row in rotated_displacement.iterrows():
-                if _is_passable(
-                    edit_map_dict,
-                    floor_name,
-                    displacement_row["x_displacement"],
-                    displacement_row["y_displacement"],
-                    dx,
-                    dy,
+                if self.floor_map.is_passable(
+                    displacement_row[COORDINATE_X],
+                    displacement_row[COORDINATE_Y],
                 ):
                     exist_count += 1
 
@@ -78,7 +94,7 @@ class MapMatcher:
         angle_df: pd.DataFrame,
         rotate_angle: float,
     ) -> dict[str, int | float]:
-        rotated_angle = (angle_df["x"] + rotate_angle) % (2 * np.pi)
+        rotated_angle = (angle_df[ANGLE] + rotate_angle) % (2 * np.pi)
 
         vertical_count = len(
             rotated_angle[

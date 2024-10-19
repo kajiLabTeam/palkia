@@ -46,12 +46,14 @@ class TrajectoryCorrector:
         """PDRを用いて軌跡を推定し、各種補正を適用する.
 
         Args:
+        ----
             acc_data (pd.DataFrame): 加速度データ
             gyro_data (pd.DataFrame): ジャイロデータ
             ble_data (pd.DataFrame, optional): BLEデータ
             floor_map (Any, optional): フロアマップデータ
 
         Returns:
+        -------
             pd.DataFrame: 推定・補正された軌跡
 
         """
