@@ -54,9 +54,12 @@ class StepEstimator:
     def detect_step_times(self, acc_data: pd.DataFrame) -> np.ndarray:
         acc_norm = self._calculate_acceleration_norm(acc_data)
         acc_smoothed = self._smooth_acceleration(acc_norm)
+
+        adaptive_threshold = np.mean(acc_smoothed) + 1.2 * np.std(acc_smoothed)
+
         peaks, _ = find_peaks(
             acc_smoothed,
-            height=self.peak_threshold,
+            height=adaptive_threshold,
             distance=self.window_size,
         )
         return acc_data.iloc[peaks][TIMESTAMP].to_numpy()
