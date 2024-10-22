@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Optional
-
 import numpy as np
 import pandas as pd
 
@@ -41,12 +39,18 @@ class EnhancedSensorData:
         return df[required_columns].sort_values(TIMESTAMP).reset_index(drop=True)
 
     def _sync_timestamps(self) -> None:
-        # Ensure that acc_df and gyro_df have the same timestamps
-        acc_timestamps = pd.Index(self.acc_df[TIMESTAMP])
-        gyro_timestamps = pd.Index(self.gyro_df[TIMESTAMP])
-        common_timestamps = acc_timestamps.intersection(gyro_timestamps)
-        self.acc_df = self.acc_df[self.acc_df[TIMESTAMP].isin(common_timestamps)]
-        self.gyro_df = self.gyro_df[self.gyro_df[TIMESTAMP].isin(common_timestamps)]
+        merged_df = pd.merge_asof(
+            self.acc_df,
+            self.gyro_df,
+            on=TIMESTAMP,
+            direction="nearest",
+        )
+
+        acc_columns = [TIMESTAMP, ACC_X, ACC_Y, ACC_Z]
+        gyro_columns = [TIMESTAMP, GYRO_X, GYRO_Y, GYRO_Z]
+
+        self.acc_df = merged_df[acc_columns].copy()
+        self.gyro_df = merged_df[gyro_columns].copy()
 
     def get_acc_data(self) -> pd.DataFrame:
         return self.acc_df
