@@ -25,15 +25,21 @@ class StepEstimator:
     def __init__(
         self,
         peak_threshold: float = 12,
-        window_size: int = 10,
+        std_factor: float = 0.6,  # 標準偏差の係数
+        min_step_time: float = 0.4,  # 最小ステップ間隔[秒]
+        smoothing_time: float = 0.25,  # 平滑化時間[秒]
         step_length: float = DEFAULT_STEP_LENGTH,
         step_length_model_path: str | None = None,
+        sampling_rate: float = 100,
     ) -> None:
+        self.std_factor = std_factor
         self.peak_threshold = peak_threshold
-        self.window_size = window_size
+        self.min_peak_distance = int(min_step_time * sampling_rate)
+        self.smoothing_window = int(smoothing_time * sampling_rate)
         self.step_length = step_length
         self.step_length_model_path = step_length_model_path
         self.step_length_model: Any = None
+        self.sampling_rate = sampling_rate
         if step_length_model_path:
             self._load_model(step_length_model_path)
 
@@ -43,6 +49,15 @@ class StepEstimator:
         except Exception as e:
             msg = f"Failed to load model from {model_path}: {e!s}"
             raise ValueError(msg) from e
+
+    def _calculate_adaptive_threshold(self, acc_smoothed: np.ndarray) -> float:
+        mean_acc = np.mean(acc_smoothed)
+        std_acc = np.std(acc_smoothed)
+
+        # ウィンドウサイズに応じて標準偏差の係数を調整
+        adjusted_factor = self.std_factor * np.sqrt(25 / self.smoothing_window)
+
+        return mean_acc + adjusted_factor * std_acc
 
     def estimate_steps(
         self, acc_data: pd.DataFrame, gyro_data: pd.DataFrame
@@ -55,12 +70,12 @@ class StepEstimator:
         acc_norm = self._calculate_acceleration_norm(acc_data)
         acc_smoothed = self._smooth_acceleration(acc_norm)
 
-        adaptive_threshold = np.mean(acc_smoothed) + 1.2 * np.std(acc_smoothed)
+        adaptive_threshold = self._calculate_adaptive_threshold(acc_smoothed)
 
         peaks, _ = find_peaks(
             acc_smoothed,
             height=adaptive_threshold,
-            distance=self.window_size,
+            distance=self.min_peak_distance,
         )
         return acc_data.iloc[peaks][TIMESTAMP].to_numpy()
 
@@ -71,7 +86,7 @@ class StepEstimator:
 
     # 平滑化
     def _smooth_acceleration(self, acc_norm: np.ndarray) -> np.ndarray:
-        kernel = np.ones(self.window_size) / self.window_size
+        kernel = np.ones(self.smoothing_window) / self.smoothing_window
         return np.convolve(acc_norm, kernel, mode="same")
 
     def _estimate_step_lengths(
@@ -85,14 +100,17 @@ class StepEstimator:
             gyro_data, pd.Series(step_times)
         )
 
-        acc_norm_smoothed = self._smooth_acceleration(
-            self._calculate_acceleration_norm(step_timings_acc)
-        )
+        # acc_norm_smoothed = self._smooth_acceleration(
+        #     self._calculate_acceleration_norm(step_timings_acc)
+        # )
+
+        acc_norm = self._calculate_acceleration_norm(step_timings_acc)
+
         orientations_diff = self._calculate_orientations_difference(
             step_timings_orientations
         )
 
-        return self._predict_step_lengths(acc_norm_smoothed, orientations_diff)
+        return self._predict_step_lengths(acc_norm, orientations_diff)
 
     def _calculate_gyro_difference(self, gyro_data: pd.DataFrame) -> np.ndarray:
         gyro_diff = np.diff(gyro_data[GYRO_X])
