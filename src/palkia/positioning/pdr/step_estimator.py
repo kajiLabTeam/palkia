@@ -84,10 +84,35 @@ class StepEstimator:
             acc_data[ACC_X] ** 2 + acc_data[ACC_Y] ** 2 + acc_data[ACC_Z] ** 2
         )
 
-    # 平滑化
+    def _create_gaussian_kernel(self, sigma: float) -> np.ndarray:
+        # カーネルサイズを計算（6σルール）
+        kernel_size = int(6 * sigma * self.sampling_rate)
+        if kernel_size % 2 == 0:
+            kernel_size += 1  # 奇数にする
+
+        # カーネルの中心からの距離を計算
+        x = np.linspace(-3, 3, kernel_size)
+
+        # ガウシアンカーネルを計算
+        kernel = np.exp(-(x**2) / (2))
+
+        # カーネルを正規化
+        return kernel / kernel.sum()
+
     def _smooth_acceleration(self, acc_norm: np.ndarray) -> np.ndarray:
-        kernel = np.ones(self.smoothing_window) / self.smoothing_window
-        return np.convolve(acc_norm, kernel, mode="same")
+        # ガウシアンカーネルを生成
+        kernel = self._create_gaussian_kernel(0.1)
+
+        # エッジ処理のためにデータを拡張
+        pad_width = len(kernel) // 2
+        acc_padded = np.pad(acc_norm, (pad_width, pad_width), mode="edge")
+
+        # ガウス畳み込みを適用
+        filtered_data = np.convolve(acc_padded, kernel, mode="valid")
+
+        return filtered_data
+
+        # 平滑化
 
     def _estimate_step_lengths(
         self, acc_data: pd.DataFrame, gyro_data: pd.DataFrame, step_times: np.ndarray
