@@ -154,12 +154,10 @@ class StepEstimator:
 
         step_timings_acc = match_data(acc_data, pd.Series(step_times))
         step_times_orientation = match_data(orientation_data, pd.Series(step_times))
+        step_timings_norm = self._calculate_acceleration_norm(step_timings_acc)
 
-        acc_norm_smoothed = self._smooth_acceleration(
-            self._calculate_acceleration_norm(step_timings_acc)
-        )
         orientations_diff = self._calculate_orientations_difference(
             step_times_orientation
         )
 
-        return self._predict_step_lengths(acc_norm_smoothed, orientations_diff)
+        return self._predict_step_lengths(step_timings_norm, orientations_diff)
