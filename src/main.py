@@ -1,5 +1,4 @@
 from palkia.const import (
-    DEFAULT_STEP_LENGTH,
     FLOOR_MAP_PATH,
     FLOOR_NAME,
     LOG_FILE_PATH,
@@ -28,28 +27,22 @@ def main() -> None:
     # センサーデータの可視化
     # plot_sensor_data(acc_data, gyro_data)
 
-    sensor_data = EnhancedSensorData(
-        acc_data,
-        gyro_data,
-    )
-    #  PDRコンポーネントの初期化
-    step_estimator = StepEstimator(
-        step_length_model_path=STEP_LENGTH_MODEL_PATH,
-    )
-    orientation_estimator = OrientationEstimator()
-    trajectory_calculator = TrajectoryCalculator(
-        initial_point={
-            "x": gt_data[POS_X][0],
-            "y": gt_data[POS_Y][0],
-        },
-    )
-
     # PDR推定器の初期化
     pdr_estimator = PDREstimator(
-        sensor_data,
-        step_estimator,
-        orientation_estimator,
-        trajectory_calculator,
+        EnhancedSensorData(
+            acc_data,
+            gyro_data,
+        ),
+        StepEstimator(
+            step_length_model_path=STEP_LENGTH_MODEL_PATH,
+        ),
+        OrientationEstimator(),
+        TrajectoryCalculator(
+            initial_point={
+                "x": gt_data[POS_X][0],
+                "y": gt_data[POS_Y][0],
+            },
+        ),
     )
 
     # 軌跡の推定
@@ -71,11 +64,11 @@ def main() -> None:
     #  推定軌跡の可視化
     plot_trajectory(correct_drift_trajectory, floor_map=floor_map)
 
-    correct_map_matching_trajectory = MapMatcher(
-        config={}, pdr_estimator=pdr_estimator, floor_map=floor_map
-    ).correct_initial_direction()
+    # correct_map_matching_trajectory = MapMatcher(
+    #     config={}, pdr_estimator=pdr_estimator, floor_map=floor_map
+    # ).correct_initial_direction()
 
-    plot_trajectory(correct_map_matching_trajectory, floor_map=floor_map)
+    # plot_trajectory(correct_map_matching_trajectory, floor_map=floor_map)
 
     # # Ground truthとの比較（オプション）
     # if not gt_data.empty:
