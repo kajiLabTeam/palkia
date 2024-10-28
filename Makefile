@@ -38,6 +38,10 @@ run:
 	cd src && \
 	poetry run python main.py
 
+run2:
+	cd src && \
+	poetry run python main2.py
+
 release:
 	poetry version patch
 	git add pyproject.toml dist
