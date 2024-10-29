@@ -57,9 +57,9 @@ def _plot_floor_trajectory(
         trajectory[x_col],
         trajectory[y_col],
         c=trajectory[TIMESTAMP],
-        cmap="viridis",
+        cmap="rainbow",
         s=5,
-        alpha=0.6,
+        alpha=1,
     )
 
     # 開始点と終了点

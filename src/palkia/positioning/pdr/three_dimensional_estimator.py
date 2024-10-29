@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Dict, Optional
+from typing import TYPE_CHECKING
 
 import numpy as np
 import pandas as pd
@@ -10,15 +10,17 @@ import pandas as pd
 from palkia.const import PRESSURE
 from palkia.const.column_name import TIMESTAMP
 from palkia.positioning.floor_identification import FloorIdentifier, FloorInfo
-from palkia.positioning.pdr import PDREstimator
-from palkia.utils.floor_map import FloorMap
+
+if TYPE_CHECKING:
+    from palkia.positioning.pdr import PDREstimator
+    from palkia.utils.floor_map import FloorMap
 
 
 class ThreeDimensionalEstimator:
     def __init__(
         self,
         pdr_estimator: PDREstimator,
-        floor_identifier: Optional[FloorIdentifier] = None,
+        floor_identifier: FloorIdentifier | None = None,
     ) -> None:
         self.pdr_estimator = pdr_estimator
         self.floor_identifier = floor_identifier or FloorIdentifier()
@@ -72,7 +74,7 @@ class ThreeDimensionalEstimator:
         return floor_info
 
     def _estimate_height_from_pressure(self, baro_data: pd.DataFrame) -> np.ndarray:
-        """気圧から高度への変換（簡易実装）"""
+        """気圧から高度への変換（簡易実装）."""
         pressure_sea_level = 1013.25  # hPa
         height = 44330 * (1 - (baro_data[PRESSURE] / pressure_sea_level) ** (1 / 5.255))
         return height.to_numpy()

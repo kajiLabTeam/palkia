@@ -25,8 +25,8 @@ class FloorIdentifier:
 
         """
         self.config = config or {}
-        self.pressure_threshold = self.config.get("pressure_threshold", 0.05)
-        self.stable_duration = self.config.get("stable_duration", 15)
+        self.pressure_threshold = self.config.get("pressure_threshold", 0.02)
+        self.stable_duration = self.config.get("stable_duration", 4)
         self.floor_height_meters = self.config.get("floor_height", 3.0)
         self.base_pressure = self.config.get("base_pressure", 1013.25)
 
@@ -50,13 +50,13 @@ class FloorIdentifier:
 
         """
         # 気圧データの前処理
-        processed_data = self._preprocess_pressure_data(baro_data)
+        # processed_data = self._preprocess_pressure_data(baro_data)
 
         # 安定区間の検出
-        stable_intervals = self._find_stable_intervals(processed_data)
+        stable_intervals = self._find_stable_intervals(baro_data)
 
         # 階層ごとの気圧レベルを特定
-        pressure_levels = self._group_pressure_levels(processed_data, stable_intervals)
+        pressure_levels = self._group_pressure_levels(baro_data, stable_intervals)
 
         # floor_infoオブジェクトの生成
         floor_info = self._create_floor_info(pressure_levels, trajectory)
@@ -127,11 +127,28 @@ class FloorIdentifier:
             if pressure_range <= self.pressure_threshold:
                 if start_idx is None:
                     start_idx = i
+
             elif start_idx is not None:
                 stable_intervals.append(
                     (baro_data[TIMESTAMP].iloc[start_idx], baro_data[TIMESTAMP].iloc[i])
                 )
                 start_idx = None
+
+        # 最後の安定区間のチェック
+        if start_idx is not None:
+            # 最後のウィンドウをチェック
+            last_window = baro_data.iloc[start_idx:]
+            if len(last_window) >= window_size:
+                pressure_range = (
+                    last_window[PRESSURE].max() - last_window[PRESSURE].min()
+                )
+                if pressure_range <= self.pressure_threshold:
+                    stable_intervals.append(
+                        (
+                            baro_data[TIMESTAMP].iloc[start_idx],
+                            baro_data[TIMESTAMP].iloc[-1],  # 最後のタイムスタンプ
+                        )
+                    )
 
         return stable_intervals
 
