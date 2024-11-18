@@ -15,7 +15,7 @@ Axis2D = Literal["x", "y"]
 
 class MapMatcher:
     def __init__(
-        self, config: Dict[str, Any], pdr_estimator: PDREstimator, floor_map: FloorMap
+        self, config: dict[str, Any], pdr_estimator: PDREstimator, floor_map: FloorMap
     ) -> None:
         self.config = config
         self.floor_map = floor_map
@@ -45,6 +45,32 @@ class MapMatcher:
             corrected_angle_df
         )
 
+    def _calculate_exist_counts(
+        self,
+        angle_df: pd.DataFrame,
+        results: pd.DataFrame,
+    ) -> pd.DataFrame:
+        def process(row) -> int:
+            rotated_displacement = (
+                self.pdrEstimator.estimate_trajectory_from_orientation(
+                    pd.DataFrame(
+                        {
+                            TIMESTAMP: angle_df[TIMESTAMP],
+                            ANGLE: (angle_df[ANGLE] + row["angle"]),
+                        }
+                    )
+                )
+            )
+
+            return rotated_displacement.apply(
+                lambda x: self.floor_map.is_passable(x[COORDINATE_X], x[COORDINATE_Y]),
+                axis=1,
+            ).sum()
+
+        results.loc[:19, "exist_count"] = results.head(20).apply(process, axis=1)
+
+        return results
+
     def find_best_initial_direction(
         self,
         angle_df: pd.DataFrame,
@@ -64,30 +90,7 @@ class MapMatcher:
             angle_df,
             df_results,
         )
-        print(df_results)
         return self._get_optimal_angle(df_results)
-
-    def _calculate_exist_counts(
-        self,
-        angle_df: pd.DataFrame,
-        results: pd.DataFrame,
-    ) -> pd.DataFrame:
-        for i, row in results.head(20).iterrows():
-            rotated_displacement = (
-                self.pdrEstimator.estimate_trajectory_from_orientation(angle_df)
-            )
-
-            exist_count = 0
-            for _, displacement_row in rotated_displacement.iterrows():
-                if self.floor_map.is_passable(
-                    displacement_row[COORDINATE_X],
-                    displacement_row[COORDINATE_Y],
-                ):
-                    exist_count += 1
-
-            results.at[i, "exist_count"] = exist_count
-
-        return results
 
     def _calculate_horizontal_and_vertical_counts(
         self,
@@ -121,6 +124,7 @@ class MapMatcher:
             "horizontal_and_vertical_count": horizontal_count + vertical_count,
         }
 
+    # exist_countを優先するようにソートする
     def _get_optimal_angle(self, results: pd.DataFrame) -> float:
         max_exist_count = results["exist_count"].max()
         optimal_result = (

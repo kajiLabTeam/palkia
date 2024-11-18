@@ -23,6 +23,13 @@ class FloorMap:
         map_image_path = floor_map_path
         map_image = Image.open(map_image_path)
 
+        # RGBもしくはL（グレースケール）モードに変換
+        if map_image.mode == "RGBA":
+            # アルファチャンネルを除去してRGBに変換
+            map_image = map_image.convert("RGB")
+
+        map_image = map_image.convert("L")
+
         return np.array(map_image, dtype=bool)
 
     # その点が歩行可能かどうかを判断する関数

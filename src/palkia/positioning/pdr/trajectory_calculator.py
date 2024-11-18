@@ -12,12 +12,25 @@ class TrajectoryCalculator:
     def __init__(
         self,
         initial_point: dict[Literal["x", "y"], float] | None = None,
+        *,
+        flip_horizontal: bool = False,
+        flip_vertical: bool = False,
     ) -> None:
         self.initial_point = initial_point or {"x": 0, "y": 0}
+        self.flip_horizontal = flip_horizontal
+        self.flip_vertical = flip_vertical
 
     def calculate_trajectory(self, steps_data: pd.DataFrame) -> pd.DataFrame:
-        x_moves = steps_data[STEP_LENGTH] * np.cos(steps_data[ANGLE])
-        y_moves = steps_data[STEP_LENGTH] * np.sin(steps_data[ANGLE])
+        angles = steps_data[ANGLE].copy()
+
+        if self.flip_horizontal:
+            angles = -angles
+
+        if self.flip_vertical:
+            angles = np.pi - angles
+
+        x_moves = steps_data[STEP_LENGTH] * np.cos(angles)
+        y_moves = steps_data[STEP_LENGTH] * np.sin(angles)
 
         initial_point_df = pd.DataFrame(
             {
