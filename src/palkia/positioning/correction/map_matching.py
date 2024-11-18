@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Any, Dict, Literal
+from collections import deque
+from typing import Any, Literal
 
 import numpy as np
 import pandas as pd
@@ -30,7 +31,7 @@ class MapMatcher:
             self.pdrEstimator.enhanced_sensor_data.corrected_orrientation_df
         )
         # 初期方向の推定
-        rotate_best_initial_direction = self.find_best_initial_direction(
+        rotate_best_initial_direction = self.__find_best_initial_direction(
             step_times_orientations
         )
 
@@ -71,7 +72,7 @@ class MapMatcher:
 
         return results
 
-    def find_best_initial_direction(
+    def __find_best_initial_direction(
         self,
         angle_df: pd.DataFrame,
     ) -> float:
@@ -133,3 +134,93 @@ class MapMatcher:
             .iloc[0]
         )
         return optimal_result["angle"]
+
+    # 既存の__init__等は省略
+
+    def move_walkable_points(self, trajectory: pd.DataFrame) -> pd.DataFrame:
+        """歩行不可能な点を歩行可能な点に移動する.
+
+        Args:
+        ----
+            trajectory (pd.DataFrame): 補正する軌跡データ
+
+        Returns:
+        -------
+            pd.DataFrame: 補正後の軌跡データ
+
+        Raises:
+        ------
+            ValueError: 歩行可能な点が全く見つからない場合
+
+        """
+        if trajectory.empty:
+            return trajectory
+
+        corrected_trajectory = trajectory.copy()
+        walkable_point_found = False
+
+        for idx, row in trajectory.iterrows():
+            print(row)
+            if not self.floor_map.is_passable(row[COORDINATE_X], row[COORDINATE_Y]):
+                nearest_point = self._get_nearest_walkable_point(
+                    row[COORDINATE_X], row[COORDINATE_Y]
+                )
+
+                if nearest_point is None:
+                    continue
+
+                walkable_point_found = True
+                delta_x = nearest_point[0] - row[COORDINATE_X]
+                delta_y = nearest_point[1] - row[COORDINATE_Y]
+
+                # 現在の点以降の全ての点を平行移動
+                corrected_trajectory.loc[idx:, COORDINATE_X] += delta_x
+                corrected_trajectory.loc[idx:, COORDINATE_Y] += delta_y
+
+        if not walkable_point_found:
+            raise ValueError("No walkable points could be found for the trajectory")
+
+        return corrected_trajectory
+
+    def _get_nearest_walkable_point(
+        self, x: float, y: float
+    ) -> tuple[float, float] | None:
+        """最も近い歩行可能な点を見つける.
+
+        Args:
+        ----
+            x (float): 現在のx座標
+            y (float): 現在のy座標
+
+        Returns:
+        -------
+            Optional[Tuple[float, float]]: 最も近い歩行可能な点。見つからない場合はNone
+
+        """
+        # BFS用のキュー初期化
+        queue = deque([(x, y)])
+        visited = {(x, y)}
+
+        # スケールファクタ（メートルからピクセルへの変換）
+        dx = self.floor_map.dx
+        dy = self.floor_map.dy
+
+        while queue:
+            current_x, current_y = queue.popleft()
+
+            # 現在の座標が歩行可能なら返す
+            if self.floor_map.is_passable(current_x, current_y):
+                return (current_x, current_y)
+
+            # 隣接点を探索 (上下左右)
+            for next_x, next_y in [
+                (current_x + dx, current_y),
+                (current_x - dx, current_y),
+                (current_x, current_y + dy),
+                (current_x, current_y - dy),
+            ]:
+                if (next_x, next_y) not in visited:
+                    visited.add((next_x, next_y))
+                    queue.append((next_x, next_y))
+
+        return None
