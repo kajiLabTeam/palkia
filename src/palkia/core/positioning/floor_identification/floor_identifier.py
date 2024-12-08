@@ -10,7 +10,7 @@ from palkia.core.positioning.floor_identification.floor_info import FloorInfo
 if TYPE_CHECKING:
     import pandas as pd
 
-    from palkia.utils.floor_map import FloorMap
+    from palkia.core.map.floor_map import FloorMap
 
 
 class FloorIdentifier:

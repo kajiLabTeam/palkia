@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from matplotlib.collections import PathCollection
 
     from palkia.core.positioning.floor_identification import FloorInfo
-    from palkia.utils.floor_map import FloorMap
+    from palkia.core.map.floor_map import FloorMap
 
 logger = logging.getLogger(__name__)
 

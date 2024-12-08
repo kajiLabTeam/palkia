@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     import pandas as pd
 
-    from palkia.utils.floor_map import FloorMap
+    from palkia.core.map.floor_map import FloorMap
 
 
 @dataclass

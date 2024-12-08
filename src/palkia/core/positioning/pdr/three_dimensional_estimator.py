@@ -13,7 +13,7 @@ from palkia.core.positioning.floor_identification import FloorIdentifier, FloorI
 
 if TYPE_CHECKING:
     from palkia.core.positioning.pdr import PDREstimator
-    from palkia.utils.floor_map import FloorMap
+    from palkia.core.map.floor_map import FloorMap
 
 
 class ThreeDimensionalEstimator:

@@ -10,7 +10,7 @@ from scipy.spatial import cKDTree
 
 from palkia.config import ANGLE, COORDINATE_X, COORDINATE_Y, TIMESTAMP
 from palkia.core.positioning.pdr import PDREstimator
-from palkia.utils.floor_map import FloorMap
+from palkia.core.map.floor_map import FloorMap
 
 Axis2D = Literal["x", "y"]
 

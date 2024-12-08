@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     import pandas as pd
     from matplotlib.axes import Axes
 
-    from palkia.utils.floor_map import FloorMap
+    from palkia.core.map.floor_map import FloorMap
 
 
 def _add_floor_map(ax: Axes, floor_map: FloorMap) -> None:
