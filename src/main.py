@@ -9,6 +9,7 @@ from palkia.config import (
     STEP_LENGTH_MODEL_PATH,
     TIMESTAMP,
 )
+from palkia.core.map.floor_map import FloorMap
 from palkia.core.positioning.correction import DriftCorrector, MapMatcher
 from palkia.core.positioning.pdr.orientation_estimator import OrientationEstimator
 from palkia.core.positioning.pdr.pdr_estimator import PDREstimator
@@ -17,7 +18,6 @@ from palkia.core.positioning.pdr.trajectory_calculator import TrajectoryCalculat
 from palkia.core.sensor_processing.data_loader import load_sensor_data_from_log
 from palkia.core.sensor_processing.enhanced_sensor_data import EnhancedSensorData
 from palkia.core.visualization import plot_trajectory
-from palkia.core.map.floor_map import FloorMap
 
 
 def main() -> None:

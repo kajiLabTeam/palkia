@@ -28,6 +28,8 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.ruff]
 extend-include = ["*.ipynb"]
+
+
 [tool.ruff.lint]
 select = ["ALL"]
 ignore = [
@@ -45,9 +47,11 @@ ignore = [
   # formatとの競合を解消するため、以下のルールを無効化
   "COM812", # Missing trailing comma in Python 3.6+
   "ISC001", # Single line implicit string concatenation
-
+  # testでassert文を使うため、以下のルールを無効化(testでのみにしたいが全て無効の状態よくない)
+  "S101",
 ]
 unfixable = ["F401"]
+
 
 [tool.pyright]
 include = ["src"]
