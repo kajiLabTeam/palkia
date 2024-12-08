@@ -14,7 +14,7 @@ from palkia.config.column_name import (
 )
 
 if TYPE_CHECKING:
-    from palkia.positioning.pdr import PDREstimator
+    from palkia.core.positioning.pdr import PDREstimator
 
 
 class DriftCorrector:

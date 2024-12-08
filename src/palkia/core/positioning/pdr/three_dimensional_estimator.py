@@ -9,10 +9,10 @@ import pandas as pd
 
 from palkia.config import PRESSURE
 from palkia.config.column_name import TIMESTAMP
-from palkia.positioning.floor_identification import FloorIdentifier, FloorInfo
+from palkia.core.positioning.floor_identification import FloorIdentifier, FloorInfo
 
 if TYPE_CHECKING:
-    from palkia.positioning.pdr import PDREstimator
+    from palkia.core.positioning.pdr import PDREstimator
     from palkia.utils.floor_map import FloorMap
 
 

@@ -17,8 +17,8 @@ from palkia.config import (
     STEP_LENGTH,
     TIMESTAMP,
 )
-from palkia.positioning.pdr.orientation_estimator import OrientationEstimator
-from palkia.utils.data_preprocessor import match_data
+from palkia.core.positioning.pdr.orientation_estimator import OrientationEstimator
+from palkia.core.sensor.data_preprocessor import match_data
 
 
 class StepEstimator:

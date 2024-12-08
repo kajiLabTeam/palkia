@@ -1,8 +1,8 @@
 import pandas as pd
 
 from palkia.config.column_name import TIMESTAMP
-from palkia.utils.data_preprocessor import match_data
-from palkia.utils.enhanced_sensor_data import EnhancedSensorData
+from palkia.core.sensor.data_preprocessor import match_data
+from palkia.core.sensor.enhanced_sensor_data import EnhancedSensorData
 
 from .orientation_estimator import OrientationEstimator
 from .step_estimator import StepEstimator

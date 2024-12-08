@@ -11,7 +11,7 @@ from .plot_utils import setup_axis
 if TYPE_CHECKING:
     import pandas as pd
 
-    from palkia.positioning.floor_identification import FloorInfo
+    from palkia.core.positioning.floor_identification import FloorInfo
 
 plt.rcParams["font.family"] = "Hiragino Sans"  # Mac の場合
 # フォントサイズの基本設定

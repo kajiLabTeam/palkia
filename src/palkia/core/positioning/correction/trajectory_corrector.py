@@ -3,7 +3,7 @@ from typing import Any, Dict
 import numpy as np
 import pandas as pd
 
-from palkia.positioning.pdr import (
+from palkia.core.positioning.pdr import (
     OrientationEstimator,
     PDREstimator,
     StepEstimator,
