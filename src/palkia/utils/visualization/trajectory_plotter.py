@@ -91,7 +91,11 @@ def plot_trajectory(
             alpha=0.7,
         )
 
-    setup_axis(ax, "Trajectory")
+    if floor_map is not None:
+        setup_axis(ax, floor_map.floor_name)
+    else:
+        setup_axis(ax, "Trajectory")
+
     ax.legend(loc="upper right")
     fig.colorbar(scatter, ax=ax, label="Time (s)")
     plt.show()

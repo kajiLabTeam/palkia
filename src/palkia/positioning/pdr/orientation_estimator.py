@@ -9,7 +9,7 @@ class OrientationEstimator:
     def __init__(self, drift_correction_factor: float = 0) -> None:
         self.drift_correction_factor = drift_correction_factor
 
-    def __calculate_full_orientation(self, gyro_data: pd.DataFrame) -> pd.DataFrame:
+    def calculate_full_orientation(self, gyro_data: pd.DataFrame) -> pd.DataFrame:
         # 角速度を積分して角度を計算
         orientation = pd.DataFrame()
         orientation[TIMESTAMP] = gyro_data[TIMESTAMP]
@@ -32,6 +32,6 @@ class OrientationEstimator:
         step_times: pd.Series,
     ) -> pd.DataFrame:
         # 全体の方向を計算
-        full_orientation = self.__calculate_full_orientation(gyro_data)
+        full_orientation = self.calculate_full_orientation(gyro_data)
         # 歩行ステップ時の方向データを抽出
         return match_data(full_orientation, step_times)

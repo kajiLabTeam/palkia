@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import heapq
 from collections import deque
 from typing import Any, Literal
 
@@ -24,8 +25,11 @@ class MapMatcher:
 
     def correct_initial_direction(self) -> pd.DataFrame:
         if self.pdrEstimator.enhanced_sensor_data.corrected_orrientation_df is None:
-            msg = "Corrected orientation data is required for initial direction correction"
-            raise ValueError(msg)
+            self.pdrEstimator.enhanced_sensor_data.corrected_orrientation_df = (
+                self.pdrEstimator.orientation_estimator.calculate_full_orientation(
+                    self.pdrEstimator.enhanced_sensor_data.gyro_df
+                )
+            )
 
         step_times_orientations = self.pdrEstimator.estimate_step_times_orientations(
             self.pdrEstimator.enhanced_sensor_data.corrected_orrientation_df
@@ -135,92 +139,70 @@ class MapMatcher:
         )
         return optimal_result["angle"]
 
-    # 既存の__init__等は省略
-
-    def move_walkable_points(self, trajectory: pd.DataFrame) -> pd.DataFrame:
-        """歩行不可能な点を歩行可能な点に移動する.
-
-        Args:
-        ----
-            trajectory (pd.DataFrame): 補正する軌跡データ
-
-        Returns:
-        -------
-            pd.DataFrame: 補正後の軌跡データ
-
-        Raises:
-        ------
-            ValueError: 歩行可能な点が全く見つからない場合
-
-        """
-        if trajectory.empty:
-            return trajectory
-
+    def correct_unwalkable_points(self, trajectory: pd.DataFrame) -> pd.DataFrame:
         corrected_trajectory = trajectory.copy()
-        walkable_point_found = False
 
-        for idx, row in trajectory.iterrows():
-            print(row)
+        for index, row in trajectory.iterrows():
             if not self.floor_map.is_passable(row[COORDINATE_X], row[COORDINATE_Y]):
-                nearest_point = self._get_nearest_walkable_point(
+                corrected_point = self._find_nearest_passable_point_dijkstra(
                     row[COORDINATE_X], row[COORDINATE_Y]
                 )
 
-                if nearest_point is None:
-                    continue
+                if corrected_point:
+                    delta_x = corrected_point[0] - row[COORDINATE_X]
+                    delta_y = corrected_point[1] - row[COORDINATE_Y]
 
-                walkable_point_found = True
-                delta_x = nearest_point[0] - row[COORDINATE_X]
-                delta_y = nearest_point[1] - row[COORDINATE_Y]
-
-                # 現在の点以降の全ての点を平行移動
-                corrected_trajectory.loc[idx:, COORDINATE_X] += delta_x
-                corrected_trajectory.loc[idx:, COORDINATE_Y] += delta_y
-
-        if not walkable_point_found:
-            raise ValueError("No walkable points could be found for the trajectory")
+                    corrected_trajectory.loc[index:, COORDINATE_X] += delta_x
+                    corrected_trajectory.loc[index:, COORDINATE_Y] += delta_y
 
         return corrected_trajectory
 
-    def _get_nearest_walkable_point(
-        self, x: float, y: float
+    def _find_nearest_passable_point_dijkstra(
+        self,
+        x: float,
+        y: float,
     ) -> tuple[float, float] | None:
-        """最も近い歩行可能な点を見つける.
+        start_row = int(x / self.floor_map.dx)
+        start_col = int(y / self.floor_map.dy)
 
-        Args:
-        ----
-            x (float): 現在のx座標
-            y (float): 現在のy座標
+        if not self._is_in_bounds(start_row, start_col):
+            return None
 
-        Returns:
-        -------
-            Optional[Tuple[float, float]]: 最も近い歩行可能な点。見つからない場合はNone
+        queue = [(0, start_row, start_col)]
+        visited = {(start_row, start_col)}
 
-        """
-        # BFS用のキュー初期化
-        queue = deque([(x, y)])
-        visited = {(x, y)}
-
-        # スケールファクタ（メートルからピクセルへの変換）
-        dx = self.floor_map.dx
-        dy = self.floor_map.dy
+        directions = [
+            ((-1, 0), 1),
+            ((1, 0), 1),
+            ((0, -1), 1),
+            ((0, 1), 1),
+            ((-1, -1), np.sqrt(2)),
+            ((-1, 1), np.sqrt(2)),
+            ((1, -1), np.sqrt(2)),
+            ((1, 1), np.sqrt(2)),
+        ]
 
         while queue:
-            current_x, current_y = queue.popleft()
+            cost, row, col = heapq.heappop(queue)
 
-            # 現在の座標が歩行可能なら返す
-            if self.floor_map.is_passable(current_x, current_y):
-                return (current_x, current_y)
+            if self.floor_map.is_passable(
+                row * self.floor_map.dx, col * self.floor_map.dy
+            ):
+                return row * self.floor_map.dx, col * self.floor_map.dy
 
-            # 隣接点を探索 (上下左右)
-            for next_x, next_y in [
-                (current_x + dx, current_y),
-                (current_x - dx, current_y),
-                (current_x, current_y + dy),
-                (current_x, current_y - dy),
-            ]:
-                if (next_x, next_y) not in visited:
-                    visited.add((next_x, next_y))
-                    queue.append((next_x, next_y))
+            for (dr, dc), weight in directions:
+                next_row, next_col = row + dr, col + dc
+                if (
+                    self._is_in_bounds(next_row, next_col)
+                    and (next_row, next_col) not in visited
+                ):
+                    heapq.heappush(queue, (cost + weight, next_row, next_col))
+                    visited.add((next_row, next_col))
 
         return None
+
+    def _is_in_bounds(self, row: int, col: int) -> bool:
+        return (
+            0 <= row < self.floor_map.floor_map_data.shape[0]
+            and 0 <= col < self.floor_map.floor_map_data.shape[1]
+        )

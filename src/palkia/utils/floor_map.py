@@ -12,7 +12,7 @@ class FloorMap:
     ) -> None:
         self.floor_name = floor_name
         self.floor_map_data = FloorMap.__load_floor_map(floor_map_path)
-        # ピクセル間の距離
+        # ピクセル間の距離(m)  # noqa: ERA001
         self.dx = dx
         self.dy = dy
 
