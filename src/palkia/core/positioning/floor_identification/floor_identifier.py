@@ -42,16 +42,13 @@ class FloorIdentifier:
         ----
             baro_data: 気圧センサーデータ
             trajectory: 軌跡データ
-            floor_maps: 各階のフロアマップ（オプション）
+            floor_maps: 各階のフロアマップ(オプション)
 
         Returns:
         -------
             各階層の情報を含む辞書
 
         """
-        # 気圧データの前処理
-        # processed_data = self._preprocess_pressure_data(baro_data)
-
         # 安定区間の検出
         stable_intervals = self._find_stable_intervals(baro_data)
 
