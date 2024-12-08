@@ -1,6 +1,6 @@
-from . import config, positioning, utils
+from . import config, core, utils
 
 __version__ = "0.2.2"
 
 
-__all__ = ["positioning", "utils", "config"]
+__all__ = ["core", "utils", "config"]
