@@ -8,6 +8,7 @@ pdr_project_summary.txt
 .pypirc
 *.ipynb
 main2.py
+main3.py
 position.py
 *.gif
 src_project_summary.txt

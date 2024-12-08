@@ -42,6 +42,10 @@ run2:
 	cd src && \
 	poetry run python main2.py
 
+run_floor5:
+	cd src && \
+	poetry run python main_floor5.py
+
 release:
 	poetry version patch
 	git add pyproject.toml dist

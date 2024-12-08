@@ -2,8 +2,6 @@ import pandas as pd
 
 from palkia.const import (
     FLOOR_MAP_PATH,
-    FLOOR_NAME,
-    LOG_FILE_PATH,
     POS_X,
     POS_Y,
     STEP_LENGTH_MODEL_PATH,
@@ -21,14 +19,23 @@ from palkia.utils.visualization import plot_trajectory
 
 
 def main() -> None:
-    acc_data, gyro_data, baro_data, mag_data, gt_data, ble_data = (
-        load_sensor_data_from_log(
-            LOG_FILE_PATH,
-        )
-    )
+    acc_data = pd.read_csv("../data/raw/other/ThreeDimensional/Accelerometer.csv")
+    gyro_data = pd.read_csv("../data/raw/other/ThreeDimensional/Gyroscope.csv")
 
+    max_time = 200
+
+    acc_data = acc_data[acc_data[TIMESTAMP] < max_time]
+    gyro_data = gyro_data[gyro_data[TIMESTAMP] < max_time]
     # センサーデータの可視化
     # plot_sensor_data(acc_data, gyro_data)
+
+    gt_data = pd.DataFrame(
+        {
+            TIMESTAMP: [0, max_time],
+            POS_X: [15, 15],
+            POS_Y: [19, 19],
+        },
+    )
 
     # PDR推定器の初期化
     pdr_estimator = PDREstimator(
@@ -37,26 +44,28 @@ def main() -> None:
             gyro_data,
         ),
         StepEstimator(
-            # step_length_model_path=STEP_LENGTH_MODEL_PATH,
+            step_length_model_path=STEP_LENGTH_MODEL_PATH,
         ),
         OrientationEstimator(),
         TrajectoryCalculator(
-            # flip_vertical=True,
+            flip_vertical=True,
             initial_point={
                 "x": gt_data[POS_X][0],
                 "y": gt_data[POS_Y][0],
             },
         ),
     )
+
     # 軌跡の推定
-    floor_name = gt_data[FLOOR_NAME][0]
+    trajectory = pdr_estimator.estimate_trajectory()
+    floor_name = "floor_5"
+
     floor_map = FloorMap(
         floor_name=floor_name,
-        floor_map_path=FLOOR_MAP_PATH.format(floor_name, "bmp"),
+        floor_map_path=FLOOR_MAP_PATH.format(floor_name, "png"),
         dx=0.01,
         dy=0.01,
     )
-    trajectory = pdr_estimator.estimate_trajectory()
 
     plot_trajectory(trajectory, floor_map=floor_map)
 
@@ -64,19 +73,19 @@ def main() -> None:
         config={}, pdr_estimator=pdr_estimator, gt_data=gt_data
     ).correct()
 
-    # 推定軌跡の可視化
-    # plot_trajectory(correct_drift_trajectory, floor_map=floor_map)
+    plot_trajectory(correct_drift_trajectory, floor_map=floor_map)
 
     correct_map_matching_trajectory = MapMatcher(
         config={}, pdr_estimator=pdr_estimator, floor_map=floor_map
     ).correct_initial_direction()
-
     plot_trajectory(correct_map_matching_trajectory, floor_map=floor_map)
 
     # walkable_trajectory = MapMatcher(
     #     config={}, pdr_estimator=pdr_estimator, floor_map=floor_map
     # ).correct_unwalkable_points(correct_map_matching_trajectory)
-    #
+
+    # print(walkable_trajectory)
+
     # plot_trajectory(walkable_trajectory, floor_map=floor_map)
 
     # # Ground truthとの比較（オプション）
