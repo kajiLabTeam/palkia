@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from palkia.const.column_name import (
+from palkia.config.column_name import (
     ACC_X,
     ACC_Y,
     ACC_Z,

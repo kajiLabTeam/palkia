@@ -1,6 +1,6 @@
 import pandas as pd
 
-from palkia.const import (
+from palkia.config import (
     FLOOR_MAP_PATH,
     FLOOR_NAME,
     LOG_FILE_PATH,

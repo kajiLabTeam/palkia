@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from scipy import signal
 
-from palkia.const import TIMESTAMP
+from palkia.config import TIMESTAMP
 
 
 def preprocess_data(

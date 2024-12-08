@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
 
-from palkia.const import (
+from palkia.config import (
     ACC_X,
     ACC_Y,
     ACC_Z,

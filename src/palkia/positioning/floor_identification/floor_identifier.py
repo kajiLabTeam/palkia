@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
-from palkia.const import PRESSURE, TIMESTAMP
+from palkia.config import PRESSURE, TIMESTAMP
 from palkia.positioning.floor_identification.floor_info import FloorInfo
 
 if TYPE_CHECKING:

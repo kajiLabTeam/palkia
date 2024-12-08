@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from palkia.const import (
+from palkia.config import (
     ACC_X,
     ACC_Y,
     ACC_Z,

@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 import matplotlib.pyplot as plt
 import numpy as np
 
-from palkia.const import COORDINATE_X, COORDINATE_Y, TIMESTAMP
+from palkia.config import COORDINATE_X, COORDINATE_Y, TIMESTAMP
 
 from .plot_utils import create_colormap, setup_axis, setup_subplots
 

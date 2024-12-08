@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from palkia.const import ANGLE, GYRO_X, TIMESTAMP
+from palkia.config import ANGLE, GYRO_X, TIMESTAMP
 from palkia.utils.data_preprocessor import match_data
 
 

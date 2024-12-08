@@ -1,6 +1,6 @@
 import pandas as pd
 
-from palkia.const.column_name import TIMESTAMP
+from palkia.config.column_name import TIMESTAMP
 from palkia.utils.data_preprocessor import match_data
 from palkia.utils.enhanced_sensor_data import EnhancedSensorData
 

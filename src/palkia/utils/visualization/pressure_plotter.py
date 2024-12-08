@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
 
-from palkia.const.column_name import PRESSURE, TIMESTAMP
+from palkia.config.column_name import PRESSURE, TIMESTAMP
 
 from .plot_utils import setup_axis
 

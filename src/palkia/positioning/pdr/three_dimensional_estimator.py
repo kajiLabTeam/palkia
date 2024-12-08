@@ -7,8 +7,8 @@ from typing import TYPE_CHECKING
 import numpy as np
 import pandas as pd
 
-from palkia.const import PRESSURE
-from palkia.const.column_name import TIMESTAMP
+from palkia.config import PRESSURE
+from palkia.config.column_name import TIMESTAMP
 from palkia.positioning.floor_identification import FloorIdentifier, FloorInfo
 
 if TYPE_CHECKING:

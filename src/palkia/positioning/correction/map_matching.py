@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 from scipy.spatial import cKDTree
 
-from palkia.const import ANGLE, COORDINATE_X, COORDINATE_Y, TIMESTAMP
+from palkia.config import ANGLE, COORDINATE_X, COORDINATE_Y, TIMESTAMP
 from palkia.positioning.pdr import PDREstimator
 from palkia.utils.floor_map import FloorMap
 

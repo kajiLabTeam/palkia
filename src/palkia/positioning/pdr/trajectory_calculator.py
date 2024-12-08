@@ -5,7 +5,7 @@ from typing import Literal
 import numpy as np
 import pandas as pd
 
-from palkia.const import ANGLE, COORDINATE_X, COORDINATE_Y, STEP_LENGTH, TIMESTAMP
+from palkia.config import ANGLE, COORDINATE_X, COORDINATE_Y, STEP_LENGTH, TIMESTAMP
 
 
 class TrajectoryCalculator:
