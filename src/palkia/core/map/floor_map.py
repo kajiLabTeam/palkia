@@ -22,6 +22,8 @@ class FloorMap:
     ) -> np.ndarray:
         map_image_path = floor_map_path
         map_image = Image.open(map_image_path)
+        # TODO: 画像の回転処理を追加する
+        # rotate(-90, expand=True)
 
         # RGBもしくはL(グレースケール)モードに変換
         if map_image.mode == "RGBA":
