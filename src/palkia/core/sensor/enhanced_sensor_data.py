@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-import numpy as np
+from typing import TYPE_CHECKING
+
 import pandas as pd
 
 from palkia.config.column_name import (
@@ -12,6 +13,9 @@ from palkia.config.column_name import (
     GYRO_Z,
     TIMESTAMP,
 )
+
+if TYPE_CHECKING:
+    import numpy as np
 
 
 class EnhancedSensorData:
