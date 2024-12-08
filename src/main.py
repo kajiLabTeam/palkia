@@ -14,8 +14,8 @@ from palkia.core.positioning.pdr.orientation_estimator import OrientationEstimat
 from palkia.core.positioning.pdr.pdr_estimator import PDREstimator
 from palkia.core.positioning.pdr.step_estimator import StepEstimator
 from palkia.core.positioning.pdr.trajectory_calculator import TrajectoryCalculator
-from palkia.core.sensor.data_loader import load_sensor_data_from_log
-from palkia.core.sensor.enhanced_sensor_data import EnhancedSensorData
+from palkia.core.sensor_processing.data_loader import load_sensor_data_from_log
+from palkia.core.sensor_processing.enhanced_sensor_data import EnhancedSensorData
 from palkia.core.visualization import plot_trajectory
 from palkia.utils.floor_map import FloorMap
 

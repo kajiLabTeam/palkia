@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 
 from palkia.config import ANGLE, GYRO_X, TIMESTAMP
-from palkia.core.sensor.data_preprocessor import match_data
+from palkia.core.sensor_processing.data_preprocessor import match_data
 
 
 class OrientationEstimator:
