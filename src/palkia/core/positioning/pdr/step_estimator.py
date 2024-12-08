@@ -85,7 +85,7 @@ class StepEstimator:
         )
 
     def _create_gaussian_kernel(self, sigma: float) -> np.ndarray:
-        # カーネルサイズを計算（6σルール）
+        # カーネルサイズを計算(6σルール)
         kernel_size = int(6 * sigma * self.sampling_rate)
         if kernel_size % 2 == 0:
             kernel_size += 1  # 奇数にする
@@ -108,11 +108,7 @@ class StepEstimator:
         acc_padded = np.pad(acc_norm, (pad_width, pad_width), mode="edge")
 
         # ガウス畳み込みを適用
-        filtered_data = np.convolve(acc_padded, kernel, mode="valid")
-
-        return filtered_data
-
-        # 平滑化
+        return np.convolve(acc_padded, kernel, mode="valid")
 
     def _estimate_step_lengths(
         self, acc_data: pd.DataFrame, gyro_data: pd.DataFrame, step_times: np.ndarray

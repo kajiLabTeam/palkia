@@ -2,10 +2,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
-import pandas as pd
+if TYPE_CHECKING:
+    import pandas as pd
 
-from palkia.utils.floor_map import FloorMap
+    from palkia.utils.floor_map import FloorMap
 
 
 @dataclass
