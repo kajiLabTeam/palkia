@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 import numpy as np
+from sklearn.cluster import DBSCAN
 
 from palkia.config import PRESSURE, TIMESTAMP
 from palkia.core.positioning.floor_identification.floor_info import FloorInfo
@@ -29,6 +30,9 @@ class FloorIdentifier:
         self.stable_duration = self.config.get("stable_duration", 4)
         self.floor_height_meters = self.config.get("floor_height", 3.0)
         self.base_pressure = self.config.get("base_pressure", 1013.25)
+        # 新しいパラメータ
+        self.dbscan_eps = self.config.get("dbscan_eps", self.pressure_threshold * 5)
+        self.dbscan_min_samples = self.config.get("dbscan_min_samples", 1)
 
     def identify_floors(
         self,
@@ -152,7 +156,7 @@ class FloorIdentifier:
     def _group_pressure_levels(
         self, baro_data: pd.DataFrame, stable_intervals: list[tuple[float, float]]
     ) -> dict[int, float]:
-        """Group stable intervals into distinct floor levels.
+        """Group stable intervals into distinct floor levels using DBSCAN.
 
         Args:
         ----
@@ -164,32 +168,29 @@ class FloorIdentifier:
             Dictionary mapping floor numbers to representative pressure values.
 
         """
+        # 安定区間から平均気圧値を抽出
         pressure_values = []
-
         for start, end in stable_intervals:
             interval_data = baro_data[
                 (baro_data[TIMESTAMP] >= start) & (baro_data[TIMESTAMP] <= end)
             ]
             pressure_values.append(interval_data[PRESSURE].mean())
 
-        # Group similar pressure values
-        pressure_values = np.array(pressure_values)
+        if not pressure_values:
+            return {}
+
+        # DBSCANでクラスタリング
+        X = np.array(pressure_values).reshape(-1, 1)
+        clustering = DBSCAN(
+            eps=self.dbscan_eps, min_samples=self.dbscan_min_samples
+        ).fit(X)
+
+        # クラスタごとの平均気圧を計算
         floor_pressures = {}
-        assigned = np.zeros_like(pressure_values, dtype=bool)
-
-        floor_num = 0
-        while not assigned.all():
-            unassigned_idx = np.where(~assigned)[0][0]
-            current_pressure = pressure_values[unassigned_idx]
-
-            # Find all pressures within threshold
-            similar_pressures = (
-                np.abs(pressure_values - current_pressure) <= self.pressure_threshold
-            )
-            assigned[similar_pressures] = True
-
-            floor_pressures[floor_num] = np.mean(pressure_values[similar_pressures])
-            floor_num += 1
+        for label in set(clustering.labels_):
+            if label != -1:  # ノイズを除外
+                mask = clustering.labels_ == label
+                floor_pressures[label] = np.mean(X[mask])
 
         return self._normalize_floor_numbers(floor_pressures)
 
