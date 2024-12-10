@@ -35,16 +35,20 @@ clean:
 	rm -rf .mypy_cache
 
 run:
-	cd src && \
+	cd examples && \
 	poetry run python main.py
 
 run2:
-	cd src && \
+	cd examples && \
 	poetry run python main2.py
 
 run_floor5:
-	cd src && \
+	cd examples && \
 	poetry run python main_floor5.py
+	
+make generate-project-summary:
+	cd examples && \
+	poetry run python generate_project_summary.py
 
 release:
 	poetry version patch
