@@ -13,6 +13,9 @@ if TYPE_CHECKING:
 
     from palkia.core.map.floor_map import FloorMap
 
+# 標準大気圧の高度による変化:約12Pa/m(1気圧=1013.25hPa)
+PRESSURE_CHANGE_PER_METER = 0.012  # hPa/m
+
 
 class FloorIdentifier:
     """Identifies floor levels based on barometer data."""
@@ -22,7 +25,17 @@ class FloorIdentifier:
 
         Args:
         ----
-            config: Configuration dictionary for floor identification parameters.
+            config: Configuration dictionary containing:
+                - pressure_threshold (float): Maximum allowed pressure variation within a stable interval.
+                  Default is 0.02 hPa, corresponding to about 1.7m height difference.
+                - stable_duration (float): Minimum time duration (in seconds) required for a stable
+                  pressure reading. Default is 4 seconds to ensure reliable floor detection.
+                - gap_threshold (float): Maximum allowed time gap (in seconds) between consecutive
+                  measurements to be considered part of the same interval. Default is 1.0 second.
+                - floor_height (float): Typical floor height in meters. Default is 3.0 meters.
+                - base_pressure (float): Reference pressure at sea level. Default is 1013.25 hPa.
+                - dbscan_min_samples (int): Minimum number of samples to form a core cluster.
+                  Default is 1 to accommodate limited data scenarios.
 
         """
         self.config = config or {}
@@ -30,8 +43,9 @@ class FloorIdentifier:
         self.stable_duration = self.config.get("stable_duration", 4)
         self.floor_height_meters = self.config.get("floor_height", 3.0)
         self.base_pressure = self.config.get("base_pressure", 1013.25)
-        # 新しいパラメータ
-        self.dbscan_eps = self.config.get("dbscan_eps", self.pressure_threshold * 5)
+        # 階高の半分を許容
+        self.dbscan_eps = PRESSURE_CHANGE_PER_METER * self.floor_height_meters * 0.5
+
         self.dbscan_min_samples = self.config.get("dbscan_min_samples", 1)
 
     def identify_floors(
@@ -194,26 +208,35 @@ class FloorIdentifier:
 
         return self._normalize_floor_numbers(floor_pressures)
 
+    # def _normalize_floor_numbers(
+    #     self, floor_pressures: dict[int, float]
+    # ) -> dict[int, float]:
+    #     """Normalize floor numbers to use 1 as ground floor.
+    #
+    #     Args:
+    #     ----
+    #         floor_pressures: Dictionary of temporary floor numbers and pressures.
+    #
+    #     Returns:
+    #     -------
+    #         Dictionary with normalized floor numbers.
+    #
+    #     """
+    #     pressures = np.array(list(floor_pressures.values()))
+    #     floor_numbers = np.argsort(pressures)[::-1] - len(pressures) // 2
+    #     return {
+    #         int(floor_num): pressure
+    #         for floor_num, pressure in zip(floor_numbers, pressures)
+    #     }
+
     def _normalize_floor_numbers(
         self, floor_pressures: dict[int, float]
     ) -> dict[int, float]:
-        """Normalize floor numbers to use 1 as ground floor.
-
-        Args:
-        ----
-            floor_pressures: Dictionary of temporary floor numbers and pressures.
-
-        Returns:
-        -------
-            Dictionary with normalized floor numbers.
-
-        """
-        pressures = np.array(list(floor_pressures.values()))
-        floor_numbers = np.argsort(pressures)[::-1] - len(pressures) // 2
-        return {
-            int(floor_num): pressure
-            for floor_num, pressure in zip(floor_numbers, pressures)
-        }
+        """Normalize floor numbers starting from the lowest pressure (highest floor)."""
+        pressures = sorted(
+            floor_pressures.values(), reverse=True
+        )  # 圧力の高い順(低層階から)
+        return dict(enumerate(pressures))
 
     def _create_floor_info(
         self, floor_pressures: dict[int, float], trajectory: pd.DataFrame
