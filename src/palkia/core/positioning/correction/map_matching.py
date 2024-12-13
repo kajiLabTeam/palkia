@@ -1,16 +1,16 @@
 from __future__ import annotations
 
 import heapq
-from collections import deque
-from typing import Any, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 import numpy as np
 import pandas as pd
-from scipy.spatial import cKDTree
 
 from palkia.config import ANGLE, COORDINATE_X, COORDINATE_Y, TIMESTAMP
-from palkia.core.positioning.pdr import PDREstimator
-from palkia.core.map.floor_map import FloorMap
+
+if TYPE_CHECKING:
+    from palkia.core.map.floor_map import FloorMap
+    from palkia.core.positioning.pdr import PDREstimator
 
 Axis2D = Literal["x", "y"]
 
@@ -55,7 +55,7 @@ class MapMatcher:
         angle_df: pd.DataFrame,
         results: pd.DataFrame,
     ) -> pd.DataFrame:
-        def process(row) -> int:
+        def process(row: pd.DataFrame) -> int:
             rotated_displacement = (
                 self.pdrEstimator.estimate_trajectory_from_orientation(
                     pd.DataFrame(
