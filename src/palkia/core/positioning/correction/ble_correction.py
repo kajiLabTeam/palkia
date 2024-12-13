@@ -1,20 +1,24 @@
-from typing import Any, Dict
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
-import pandas as pd
-from scipy.spatial.distance import cdist
+
+if TYPE_CHECKING:
+    import pandas as pd
 
 
 class BLECorrector:
-    def __init__(self, config: Dict[str, Any]):
+    def __init__(self, config: dict[str, Any]) -> None:
         self.config = config
-        # BLEビーコンの位置情報を読み込む（設定ファイルから）
-        self.beacon_positions = config.get("beacon_positions", {})
+        self.beacon_positions = config.get(
+            "beacon_positions", {}
+        )  # BLEビーコンの位置情報を読み込む(設定ファイルから)
         self.rssi_threshold = config.get("rssi_threshold", -80)  # RSSIの閾値
-        self.time_window = config.get("time_window", 5)  # マッチングの時間窓（秒）
+        self.time_window = config.get("time_window", 5)  # マッチングの時間窓(秒)
 
     def correct(self, trajectory: pd.DataFrame, ble_data: pd.DataFrame) -> pd.DataFrame:
-        """BLEデータを使用して軌跡を補正する
+        """BLEデータを使用して軌跡を補正する.
 
         Args:
             trajectory (pd.DataFrame): 補正する軌跡
@@ -61,11 +65,13 @@ class BLECorrector:
         return corrected_trajectory
 
     def _filter_strong_blescans(self, ble_data: pd.DataFrame) -> pd.DataFrame:
-        """強いRSSI値のBLEスキャンのみをフィルタリングする"""
+        """強いRSSI値のBLEスキャンのみをフィルタリングする."""
         return ble_data[ble_data["rssi"] > self.rssi_threshold].copy()
 
-    def _estimate_position_from_ble(self, ble_scans: pd.DataFrame) -> Dict[str, float]:
-        """BLEスキャンデータから位置を推定する"""
+    def _estimate_position_from_ble(
+        self, ble_scans: pd.DataFrame
+    ) -> dict[str, float] | None:
+        """BLEスキャンデータから位置を推定する."""
         weighted_positions = []
         weights = []
 
@@ -86,9 +92,11 @@ class BLECorrector:
         return None
 
     def _adjust_trajectory(
-        self, trajectory_segment: pd.DataFrame, optimal_position: Dict[str, float]
+        self,
+        trajectory_segment: pd.DataFrame,
+        optimal_position: dict[str, float] | None,
     ) -> pd.DataFrame:
-        """軌跡セグメントを最適位置に合わせて調整する"""
+        """軌跡セグメントを最適位置に合わせて調整する."""
         if optimal_position is None:
             return trajectory_segment
 
@@ -107,10 +115,11 @@ class BLECorrector:
         return adjusted_segment
 
     def _calculate_rssi_to_distance(self, rssi: float) -> float:
-        """RSSI値を距離に変換する（簡易的なモデル）"""
+        """RSSI値を距離に変換する(簡易的なモデル)."""
         # 参考: https://iotandelectronics.wordpress.com/2016/10/07/how-to-calculate-distance-from-the-rssi-value-of-the-ble-beacon/
-        txPower = -59  # 1m距離での理想的なRSSI値（デバイスによって異なる）
-        ratio = rssi * 1.0 / txPower
+        # 1m距離での理想的なRSSI値(デバイスによって異なる)
+        tx_power = -59
+        ratio = rssi * 1.0 / tx_power
         if ratio < 1.0:
             return ratio**10
         return 0.89976 * (ratio**7.7095) + 0.111
