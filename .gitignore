@@ -13,3 +13,6 @@ position.py
 *.gif
 src_project_summary.txt
 .DS_Store
+.venv
+
+palkia-indoor-positioning_project_summary.txt

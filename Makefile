@@ -18,6 +18,7 @@ lint:
 
 lint-fix:
 	poetry run ruff check src --fix
+	
 
 format-check:
 	poetry run ruff format --check src/palkia
@@ -47,7 +48,6 @@ run_floor5:
 	poetry run python main_floor5.py
 	
 make generate-project-summary:
-	cd examples && \
 	poetry run python generate_project_summary.py
 
 release:
