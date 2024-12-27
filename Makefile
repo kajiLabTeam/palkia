@@ -46,6 +46,10 @@ run2:
 run_floor5:
 	cd examples && \
 	poetry run python main_floor5.py
+
+run_ble:
+	cd examples && \
+	poetry run python main_ble.py
 	
 make generate-project-summary:
 	poetry run python generate_project_summary.py

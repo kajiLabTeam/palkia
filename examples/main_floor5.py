@@ -78,6 +78,7 @@ def main() -> None:
     correct_map_matching_trajectory = MapMatcher(
         config={}, pdr_estimator=pdr_estimator, floor_map=floor_map
     ).correct_initial_direction()
+
     plot_trajectory(correct_map_matching_trajectory, floor_map=floor_map)
 
     # walkable_trajectory = MapMatcher(
