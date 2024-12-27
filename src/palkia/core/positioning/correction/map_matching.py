@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import heapq
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 import pandas as pd
@@ -11,8 +11,6 @@ from palkia.config import ANGLE, COORDINATE_X, COORDINATE_Y, TIMESTAMP
 if TYPE_CHECKING:
     from palkia.core.map.floor_map import FloorMap
     from palkia.core.positioning.pdr import PDREstimator
-
-Axis2D = Literal["x", "y"]
 
 
 class MapMatcher:
@@ -35,7 +33,7 @@ class MapMatcher:
             self.pdrEstimator.enhanced_sensor_data.corrected_orrientation_df
         )
         # 初期方向の推定
-        rotate_best_initial_direction = self.__find_best_initial_direction(
+        rotate_best_initial_direction = self._find_best_initial_direction(
             step_times_orientations
         )
 
@@ -49,6 +47,30 @@ class MapMatcher:
         return self.pdrEstimator.estimate_trajectory_from_orientation(
             corrected_angle_df
         )
+
+    def correct_unwalkable_points(
+        self,
+        trajectory: pd.DataFrame,
+    ) -> pd.DataFrame:
+        corrected_trajectory = trajectory.copy().reset_index(drop=True)
+
+        corrected_trajectory = self.pdrEstimator.estimate_trajectory_from_orientation(
+            self.pdrEstimator.enhanced_sensor_data.corrected_orrientation_df  # type: ignore
+        )
+
+        for index, _ in enumerate(trajectory.iterrows()):
+            nearest_row = corrected_trajectory.iloc[index]
+            if not self.floor_map.is_passable(
+                nearest_row[COORDINATE_X],
+                nearest_row[COORDINATE_Y],
+            ):
+                corrected_trajectory = self._apply_trajectory_correction(
+                    corrected_trajectory,
+                    index,
+                    nearest_row,
+                )
+
+        return corrected_trajectory
 
     def _calculate_exist_counts(
         self,
@@ -76,7 +98,7 @@ class MapMatcher:
 
         return results
 
-    def __find_best_initial_direction(
+    def _find_best_initial_direction(
         self,
         angle_df: pd.DataFrame,
     ) -> float:
@@ -103,24 +125,31 @@ class MapMatcher:
         rotate_angle: float,
     ) -> dict[str, int | float]:
         rotated_angle = (angle_df[ANGLE] + rotate_angle) % (2 * np.pi)
+        rad_range_threshold = 0.1
 
         vertical_count = len(
             rotated_angle[
                 (
-                    (rotated_angle >= np.pi / 2 - 0.1)
-                    & (rotated_angle <= np.pi / 2 + 0.1)
+                    (rotated_angle >= np.pi / 2 - rad_range_threshold)
+                    & (rotated_angle <= np.pi / 2 + rad_range_threshold)
                 )
                 | (
-                    (rotated_angle >= 3 * np.pi / 2 - 0.1)
-                    & (rotated_angle <= 3 * np.pi / 2 + 0.1)
+                    (rotated_angle >= 3 * np.pi / 2 - rad_range_threshold)
+                    & (rotated_angle <= 3 * np.pi / 2 + rad_range_threshold)
                 )
             ],
         )
 
         horizontal_count = len(
             rotated_angle[
-                ((rotated_angle <= 0.1) | (rotated_angle >= 2 * np.pi - 0.1))
-                | ((rotated_angle >= np.pi - 0.1) & (rotated_angle <= np.pi + 0.1))
+                (
+                    (rotated_angle <= rad_range_threshold)
+                    | (rotated_angle >= 2 * np.pi - rad_range_threshold)
+                )
+                | (
+                    (rotated_angle >= np.pi - rad_range_threshold)
+                    & (rotated_angle <= np.pi + rad_range_threshold)
+                )
             ],
         )
 
@@ -133,37 +162,55 @@ class MapMatcher:
     def _get_optimal_angle(self, results: pd.DataFrame) -> float:
         max_exist_count = results["exist_count"].max()
         optimal_result = (
-            results[results["exist_count"] == max_exist_count]
-            .sort_values(by="horizontal_and_vertical_count", ascending=False)
+            results[results["exist_count"] == max_exist_count]  # type: ignore
+            .sort_values(by=("horizontal_and_vertical_count"), ascending=False)
             .iloc[0]
         )
         return optimal_result["angle"]
 
-    def correct_unwalkable_points(self, trajectory: pd.DataFrame) -> pd.DataFrame:
-        corrected_trajectory = trajectory.copy()
+    def _apply_trajectory_correction(
+        self,
+        corrected_displacement_df: pd.DataFrame,
+        index: int,
+        nearest_row: pd.Series,
+    ) -> pd.DataFrame:
+        before_of_correction_point = {
+            "x": nearest_row[COORDINATE_X],
+            "y": nearest_row[COORDINATE_Y],
+        }
 
-        for index, row in trajectory.iterrows():
-            if not self.floor_map.is_passable(row[COORDINATE_X], row[COORDINATE_Y]):
-                corrected_point = self._find_nearest_passable_point_dijkstra(
-                    row[COORDINATE_X], row[COORDINATE_Y]
-                )
+        corrected_point = self._find_nearest_passable_point_dijkstra(
+            float(nearest_row[COORDINATE_X]),
+            float(nearest_row[COORDINATE_Y]),
+        )
 
-                if corrected_point:
-                    delta_x = corrected_point[0] - row[COORDINATE_X]
-                    delta_y = corrected_point[1] - row[COORDINATE_Y]
+        if corrected_point is None:
+            return corrected_displacement_df
 
-                    corrected_trajectory.loc[index:, COORDINATE_X] += delta_x
-                    corrected_trajectory.loc[index:, COORDINATE_Y] += delta_y
+        after_of_correction_point = {
+            "x": corrected_point[0],
+            "y": corrected_point[1],
+        }
 
-        return corrected_trajectory
+        delta_x = after_of_correction_point["x"] - before_of_correction_point["x"]
+        delta_y = after_of_correction_point["y"] - before_of_correction_point["y"]
+
+        corrected_displacement_df.loc[index:, [COORDINATE_X, COORDINATE_Y]] += [
+            delta_x,
+            delta_y,
+        ]
+
+        return corrected_displacement_df
 
     def _find_nearest_passable_point_dijkstra(
         self,
         x: float,
         y: float,
     ) -> tuple[float, float] | None:
-        start_row = int(x / self.floor_map.dx)
-        start_col = int(y / self.floor_map.dy)
+        # グリッド変換時のイプシロン値を追加
+        epsilon = 1e-9
+        start_row = int((x + epsilon) / self.floor_map.dx)
+        start_col = int((y + epsilon) / self.floor_map.dy)
 
         if not self._is_in_bounds(start_row, start_col):
             return None
