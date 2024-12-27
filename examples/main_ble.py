@@ -1,3 +1,5 @@
+import pandas as pd
+
 from palkia.config import (
     FLOOR_MAP_PATH,
     FLOOR_NAME,
@@ -5,6 +7,7 @@ from palkia.config import (
     POS_X,
     POS_Y,
 )
+from palkia.config.path import BEACON_FP_PATH
 from palkia.core.map.floor_map import FloorMap
 from palkia.core.positioning.correction import (
     BLECorrector,
@@ -55,24 +58,27 @@ def main() -> None:
     )
     trajectory = pdr_estimator.estimate_trajectory()
 
-    # plot_trajectory(trajectory, floor_map=floor_map)
-
     correct_drift_trajectory = DriftCorrector(
         config={}, pdr_estimator=pdr_estimator, gt_data=gt_data
     ).correct()
 
-    # plot_trajectory(correct_drift_trajectory, floor_map=floor_map)
+    ble_fp = pd.read_csv(BEACON_FP_PATH)
 
-    # correct_map_matching_trajectory = MapMatcher(
-    #     config={}, pdr_estimator=pdr_estimator, floor_map=floor_map
-    # ).correct_initial_direction()
-    # plot_trajectory(correct_map_matching_trajectory, floor_map=floor_map)
+    print(ble_fp[ble_fp["beacon_address"] == "C0:1C:4D:44:32:56"])
 
-    ble_correction_trajectory = BLECorrector().correct_initial_direction(
-        correct_drift_trajectory, ble_data
+    ble_correction_trajectory = BLECorrector().correct_initial_direction_with_fp(
+        correct_drift_trajectory,
+        ble_data,
+        ble_fp,
     )
 
     plot_trajectory(ble_correction_trajectory, floor_map=floor_map)
+
+    walkable_trajectory = MapMatcher(
+        config={}, pdr_estimator=pdr_estimator, floor_map=floor_map
+    ).correct_unwalkable_points(ble_correction_trajectory)
+
+    plot_trajectory(walkable_trajectory, floor_map=floor_map)
 
 
 if __name__ == "__main__":

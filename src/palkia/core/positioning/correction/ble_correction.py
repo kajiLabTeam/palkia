@@ -19,7 +19,7 @@ class BLECorrector:
     def __init__(
         self,
         beacon_positions: pd.DataFrame | None = None,
-        rssi_threshold: int = -80,
+        rssi_threshold: int = -70,
         time_window: int = 5,
     ) -> None:
         self.beacon_positions = (
@@ -36,10 +36,12 @@ class BLECorrector:
         """BLEデータを使用して軌跡を補正する.
 
         Args:
+        ----
             trajectory: 補正する軌跡
             ble_data: BLEスキャンデータ
 
         Returns:
+        -------
             BLE補正された軌跡
 
         """
@@ -55,6 +57,148 @@ class BLECorrector:
         return self._optimize_trajectory_rotation(
             trajectory.copy(), strong_ble_merged, initial_point
         )
+
+    def correct_initial_direction_with_fp(
+        self,
+        trajectory: pd.DataFrame,
+        ble_data: pd.DataFrame,
+        fp_data: pd.DataFrame,
+    ) -> pd.DataFrame:
+        """FPデータを使用して軌跡を補正."""
+        strong_ble_scans = self._filter_strong_blescans(ble_data)
+        strong_ble_merged = self._estimate_positions_from_fp(strong_ble_scans, fp_data)
+
+        initial_point = Point2D(x=trajectory["x"].iloc[0], y=trajectory["y"].iloc[0])
+
+        return self._optimize_trajectory_rotation(
+            trajectory.copy(), strong_ble_merged, initial_point
+        )
+
+    def _calculate_rssi_weight(
+        self,
+        rssi_value: float,
+        rssi_mean: float,
+        rssi_std: float,
+        min_std: float = 1.0,  # 最小標準偏差
+        min_weight: float = 1e-10,  # 最小重み
+    ) -> float:
+        """RSSIの値に基づいて重みを計算.
+
+        Args:
+            rssi_value: 現在のRSSI値
+            rssi_mean: FPデータのRSSI平均値
+            rssi_std: FPデータのRSSI標準偏差
+            min_std: 最小標準偏差（ゼロ除算防止用）
+            min_weight: 最小重み
+
+        Returns:
+            float: 計算された重み
+        """
+        # 標準偏差が0またはNaNの場合、min_stdを使用
+        std = max(rssi_std if not np.isnan(rssi_std) else 0, min_std)
+
+        # 重みの計算
+        weight = np.exp(-0.5 * ((rssi_value - rssi_mean) / std) ** 2)
+
+        # 最小重みを保証
+        return max(weight, min_weight)
+
+    def _calculate_rssi_weight_with_path_loss(
+        self,
+        rssi_value: float,
+        reference_rssi: float,
+        path_loss_exponent: float = 2.0,
+        reference_distance: float = 1.0,
+        min_weight: float = 1e-10,
+    ) -> float:
+        """RSSIの値に基づいて重みを計算（パスロスモデル使用）.
+
+        Args:
+            rssi_value: 現在のRSSI値
+            reference_rssi: 基準距離での参照RSSI値
+            path_loss_exponent: パスロス指数（環境による、通常2-4の範囲）
+            reference_distance: 基準距離（メートル）
+            min_weight: 最小重み
+
+        Returns:
+            float: 計算された重み
+        """
+        # RSSIから距離を推定（対数距離損失モデル）
+        estimated_distance = reference_distance * 10 ** (
+            (reference_rssi - rssi_value) / (10 * path_loss_exponent)
+        )
+
+        # 距離の逆数を重みとして使用（距離が遠いほど重みが小さくなる）
+        weight = 1 / (estimated_distance**2)
+
+        return max(weight, min_weight)
+
+    def _calculate_hybrid_weight(
+        self,
+        rssi_value: float,
+        rssi_mean: float,
+        rssi_std: float,
+        reference_rssi: float = -76,
+        path_loss_exponent: float = 2.0,
+        alpha: float = 0.5,  # ブレンド係数
+        min_weight: float = 1e-10,
+    ) -> float:
+        """ガウシアンモデルとパスロスモデルを組み合わせた重み計算.
+
+        Args:
+            rssi_value: 現在のRSSI値
+            rssi_mean: FPデータのRSSI平均値
+            rssi_std: FPデータのRSSI標準偏差
+            reference_rssi: 基準距離での参照RSSI値
+            path_loss_exponent: パスロス指数
+            alpha: ブレンド係数（0-1）、1に近いほどガウシアンモデルの影響が強くなる
+            min_weight: 最小重み
+
+        Returns:
+            float: 計算された重み
+
+        """
+        gaussian_weight = self._calculate_rssi_weight(rssi_value, rssi_mean, rssi_std)
+        path_loss_weight = self._calculate_rssi_weight_with_path_loss(
+            rssi_value, reference_rssi, path_loss_exponent
+        )
+
+        # 重みの線形結合
+        combined_weight = alpha * gaussian_weight + (1 - alpha) * path_loss_weight
+
+        return max(combined_weight, min_weight)
+
+    def _get_alpha(self, sample_count: int, min_samples: int = 3) -> float:
+        if sample_count < min_samples:
+            return 0.2  # パスロスモデルの重みを大きくする
+        return 0.7
+
+    def _estimate_beacon_position(
+        self, fp_data: pd.DataFrame, beacon_address: str, target_rssi: float
+    ) -> tuple[float, float]:
+        """基地局の位置を推定."""
+        beacon_fp = fp_data[fp_data["beacon_address"] == beacon_address]
+
+        if beacon_fp.empty:
+            print(f"Warning: No FP data found for beacon {beacon_address}")
+            return 0.0, 0.0  # もしくは適切なデフォルト値
+
+        weights = np.array(
+            [
+                self._calculate_hybrid_weight(
+                    row["rssi_mean"],  # type: ignore
+                    target_rssi,
+                    row["rssi_std"],  # type: ignore
+                    self._get_alpha(row["count"]),  # type: ignore
+                )
+                for _, row in beacon_fp.iterrows()
+            ]
+        )  # type: ignore
+
+        estimated_x = np.average(beacon_fp["x"], weights=weights)
+        estimated_y = np.average(beacon_fp["y"], weights=weights)
+
+        return estimated_x, estimated_y
 
     def _rotate_trajectory(
         self, df: pd.DataFrame, angle: float, initial_point: Point2D
@@ -76,6 +220,23 @@ class BLECorrector:
         return pd.DataFrame(
             {"ts": df.ts, COORDINATE_X: rotated_x, COORDINATE_Y: rotated_y}
         )
+
+    def _estimate_positions_from_fp(
+        self, ble_data: pd.DataFrame, fp_data: pd.DataFrame
+    ) -> pd.DataFrame:
+        """全てのBLEデータに対して位置を推定"""
+        result_data = ble_data.copy()
+        result_data["ble_x"] = 0.0
+        result_data["ble_y"] = 0.0
+
+        for idx, row in result_data.iterrows():
+            x, y = self._estimate_beacon_position(
+                fp_data, row["bdaddress"], row["rssi"]
+            )
+            result_data.loc[idx, "ble_x"] = x
+            result_data.loc[idx, "ble_y"] = y
+
+        return result_data
 
     def _calculate_total_distance(
         self, trajectory: pd.DataFrame, ble_data: pd.DataFrame
