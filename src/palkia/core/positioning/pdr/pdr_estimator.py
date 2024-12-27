@@ -33,7 +33,8 @@ class PDREstimator:
             pd.Series(step_times),
         )
         steps_lengths = self.step_estimator.estimate_steps(
-            self.enhanced_sensor_data.acc_df, self.enhanced_sensor_data.gyro_df
+            self.enhanced_sensor_data.acc_df,
+            self.enhanced_sensor_data.gyro_df,
         )
         # step_orientationsとsteps_lengthsを結合
         steps_data = step_orientations.merge(steps_lengths, on=TIMESTAMP)
