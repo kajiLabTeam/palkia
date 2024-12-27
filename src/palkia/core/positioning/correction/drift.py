@@ -28,12 +28,12 @@ class DriftCorrector:
 
     def correct(self) -> pd.DataFrame:
         angle_df = self._convert_gyro_to_angle(
-            self.pdr_estimator.enhanced_sensor_data.gyro_df
+            self.pdr_estimator.enhanced_sensor_data.get_gyro_data()
         )
         optimal_drift = self._search_optimal_drift_from_angle(angle_df)
         corrected_angle_df = self._apply_drift_correction(angle_df, optimal_drift)
 
-        self.pdr_estimator.enhanced_sensor_data.corrected_orrientation_df = (
+        self.pdr_estimator.enhanced_sensor_data.update_corrected_orrientation_df(
             corrected_angle_df
         )
         return self.pdr_estimator.estimate_trajectory_from_orientation(

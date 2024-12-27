@@ -26,15 +26,15 @@ class PDREstimator:
         self,
     ) -> pd.DataFrame:
         step_times = self.step_estimator.detect_step_times(
-            self.enhanced_sensor_data.acc_df,
+            self.enhanced_sensor_data.get_acc_data(),
         )
         step_orientations = self.orientation_estimator.estimate_step_orientations(
-            self.enhanced_sensor_data.gyro_df,
+            self.enhanced_sensor_data.get_gyro_data(),
             pd.Series(step_times),
         )
         steps_lengths = self.step_estimator.estimate_steps(
-            self.enhanced_sensor_data.acc_df,
-            self.enhanced_sensor_data.gyro_df,
+            self.enhanced_sensor_data.get_acc_data(),
+            self.enhanced_sensor_data.get_gyro_data(),
         )
         # step_orientationsとsteps_lengthsを結合
         steps_data = step_orientations.merge(steps_lengths, on=TIMESTAMP)
@@ -47,10 +47,10 @@ class PDREstimator:
         orientation_data: pd.DataFrame,
     ) -> pd.DataFrame:
         step_times = self.step_estimator.detect_step_times(
-            self.enhanced_sensor_data.acc_df
+            self.enhanced_sensor_data.get_acc_data()
         )
         step_lengths = self.step_estimator.estimate_steps_from_orientation(
-            self.enhanced_sensor_data.acc_df, orientation_data
+            self.enhanced_sensor_data.get_acc_data(), orientation_data
         )
         step_times_orientation = match_data(orientation_data, pd.Series(step_times))
 
@@ -63,6 +63,6 @@ class PDREstimator:
         orientation_data: pd.DataFrame,
     ) -> pd.DataFrame:
         step_times = self.step_estimator.detect_step_times(
-            self.enhanced_sensor_data.acc_df,
+            self.enhanced_sensor_data.get_acc_data(),
         )
         return match_data(orientation_data, pd.Series(step_times))

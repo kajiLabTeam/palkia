@@ -22,16 +22,10 @@ class MapMatcher:
         self.pdrEstimator = pdr_estimator
 
     def correct_initial_direction(self) -> pd.DataFrame:
-        if self.pdrEstimator.enhanced_sensor_data.corrected_orrientation_df is None:
-            self.pdrEstimator.enhanced_sensor_data.corrected_orrientation_df = (
-                self.pdrEstimator.orientation_estimator.calculate_full_orientation(
-                    self.pdrEstimator.enhanced_sensor_data.gyro_df
-                )
-            )
-
         step_times_orientations = self.pdrEstimator.estimate_step_times_orientations(
-            self.pdrEstimator.enhanced_sensor_data.corrected_orrientation_df
+            self.pdrEstimator.enhanced_sensor_data.get_corrected_orrientation_df()
         )
+
         # 初期方向の推定
         rotate_best_initial_direction = self._find_best_initial_direction(
             step_times_orientations
@@ -44,6 +38,10 @@ class MapMatcher:
             }
         )
 
+        self.pdrEstimator.enhanced_sensor_data.update_corrected_orrientation_df(
+            corrected_angle_df
+        )
+
         return self.pdrEstimator.estimate_trajectory_from_orientation(
             corrected_angle_df
         )
@@ -53,10 +51,6 @@ class MapMatcher:
         trajectory: pd.DataFrame,
     ) -> pd.DataFrame:
         corrected_trajectory = trajectory.copy().reset_index(drop=True)
-
-        corrected_trajectory = self.pdrEstimator.estimate_trajectory_from_orientation(
-            self.pdrEstimator.enhanced_sensor_data.corrected_orrientation_df  # type: ignore
-        )
 
         for index, _ in enumerate(trajectory.iterrows()):
             nearest_row = corrected_trajectory.iloc[index]
