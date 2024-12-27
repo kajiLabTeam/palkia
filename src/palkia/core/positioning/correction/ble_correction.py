@@ -1,125 +1,115 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from dataclasses import dataclass
 
 import numpy as np
+import pandas as pd
 
-if TYPE_CHECKING:
-    import pandas as pd
+from palkia.config.column_name import COORDINATE_X, COORDINATE_Y
+from palkia.config.path import BEACON_LIST_PATH
+
+
+@dataclass
+class Point2D:
+    x: float
+    y: float
 
 
 class BLECorrector:
-    def __init__(self, config: dict[str, Any]) -> None:
-        self.config = config
-        self.beacon_positions = config.get(
-            "beacon_positions", {}
-        )  # BLEビーコンの位置情報を読み込む(設定ファイルから)
-        self.rssi_threshold = config.get("rssi_threshold", -80)  # RSSIの閾値
-        self.time_window = config.get("time_window", 5)  # マッチングの時間窓(秒)
+    def __init__(
+        self,
+        beacon_positions: pd.DataFrame | None = None,
+        rssi_threshold: int = -80,
+        time_window: int = 5,
+    ) -> None:
+        self.beacon_positions = (
+            pd.read_csv(BEACON_LIST_PATH)
+            if beacon_positions is None
+            else beacon_positions
+        )
+        self.rssi_threshold = rssi_threshold
+        self.time_window = time_window
 
-    def correct(self, trajectory: pd.DataFrame, ble_data: pd.DataFrame) -> pd.DataFrame:
+    def correct_initial_direction(
+        self, trajectory: pd.DataFrame, ble_data: pd.DataFrame
+    ) -> pd.DataFrame:
         """BLEデータを使用して軌跡を補正する.
 
         Args:
-            trajectory (pd.DataFrame): 補正する軌跡
-            ble_data (pd.DataFrame): BLEスキャンデータ
+            trajectory: 補正する軌跡
+            ble_data: BLEスキャンデータ
 
         Returns:
-            pd.DataFrame: BLE補正された軌跡
+            BLE補正された軌跡
 
         """
-        # 強いRSSI値のBLEスキャンのみをフィルタリング
         strong_ble_scans = self._filter_strong_blescans(ble_data)
+        strong_ble_merged = strong_ble_scans.merge(
+            self.beacon_positions, on="bdaddress", how="left"
+        ).rename(columns={"x": "ble_x", "y": "ble_y"})
 
-        # 補正された軌跡を初期化
-        corrected_trajectory = trajectory.copy()
+        initial_point = Point2D(
+            x=trajectory[COORDINATE_X].iloc[0], y=trajectory[COORDINATE_Y].iloc[0]
+        )
 
-        # 時間窓ごとに処理
-        for start_time in np.arange(
-            trajectory["ts"].min(), trajectory["ts"].max(), self.time_window
-        ):
-            end_time = start_time + self.time_window
+        return self._optimize_trajectory_rotation(
+            trajectory.copy(), strong_ble_merged, initial_point
+        )
 
-            # 時間窓内の軌跡とBLEスキャンを抽出
-            window_trajectory = trajectory[
-                (trajectory["ts"] >= start_time) & (trajectory["ts"] < end_time)
-            ]
-            window_ble_scans = strong_ble_scans[
-                (strong_ble_scans["ts"] >= start_time)
-                & (strong_ble_scans["ts"] < end_time)
-            ]
+    def _rotate_trajectory(
+        self, df: pd.DataFrame, angle: float, initial_point: Point2D
+    ) -> pd.DataFrame:
+        x_displacement = df[COORDINATE_X] - initial_point.x
+        y_displacement = df[COORDINATE_Y] - initial_point.y
 
-            if not window_ble_scans.empty:
-                # BLEデータを使用して最適な位置を推定
-                optimal_position = self._estimate_position_from_ble(window_ble_scans)
+        rotated_x = (
+            x_displacement * np.cos(angle)
+            - y_displacement * np.sin(angle)
+            + initial_point.x
+        )
+        rotated_y = (
+            x_displacement * np.sin(angle)
+            + y_displacement * np.cos(angle)
+            + initial_point.y
+        )
 
-                # 軌跡を補正
-                corrected_trajectory.loc[
-                    (corrected_trajectory["ts"] >= start_time)
-                    & (corrected_trajectory["ts"] < end_time),
-                    ["x", "y"],
-                ] = self._adjust_trajectory(
-                    window_trajectory[["x", "y"]], optimal_position
-                )
+        return pd.DataFrame(
+            {"ts": df.ts, COORDINATE_X: rotated_x, COORDINATE_Y: rotated_y}
+        )
 
-        return corrected_trajectory
+    def _calculate_total_distance(
+        self, trajectory: pd.DataFrame, ble_data: pd.DataFrame
+    ) -> float:
+        merged = pd.merge_asof(
+            trajectory.sort_values("ts"),
+            ble_data.sort_values("ts"),
+            on="ts",
+            direction="nearest",
+        )
 
-    def _filter_strong_blescans(self, ble_data: pd.DataFrame) -> pd.DataFrame:
+        return np.sqrt(
+            (merged[COORDINATE_X] - merged["ble_x"]) ** 2
+            + (merged[COORDINATE_Y] - merged["ble_y"]) ** 2
+        ).sum()
+
+    def _optimize_trajectory_rotation(
+        self,
+        trajectory: pd.DataFrame,
+        ble_data: pd.DataFrame,
+        initial_point: Point2D,
+    ) -> pd.DataFrame:
+        angles = np.arange(0, 2 * np.pi, 0.01)
+        optimal_angle = min(
+            angles,
+            key=lambda angle: self._calculate_total_distance(
+                self._rotate_trajectory(trajectory, angle, initial_point), ble_data
+            ),
+        )
+
+        return self._rotate_trajectory(trajectory, optimal_angle, initial_point)
+
+    def _filter_strong_blescans(
+        self, ble_data: pd.DataFrame
+    ) -> pd.Series | pd.DataFrame:
         """強いRSSI値のBLEスキャンのみをフィルタリングする."""
         return ble_data[ble_data["rssi"] > self.rssi_threshold].copy()
-
-    def _estimate_position_from_ble(
-        self, ble_scans: pd.DataFrame
-    ) -> dict[str, float] | None:
-        """BLEスキャンデータから位置を推定する."""
-        weighted_positions = []
-        weights = []
-
-        for _, scan in ble_scans.iterrows():
-            if scan["bdaddress"] in self.beacon_positions:
-                beacon_pos = self.beacon_positions[scan["bdaddress"]]
-                # RSSIの値が大きいほど重みを大きくする
-                weight = 10 ** (scan["rssi"] / 10)  # 例: -70dBm → 0.1, -60dBm → 0.25
-                weighted_positions.append(
-                    [beacon_pos["x"] * weight, beacon_pos["y"] * weight]
-                )
-                weights.append(weight)
-
-        if weighted_positions:
-            # 重み付き平均を計算
-            estimated_position = np.average(weighted_positions, axis=0, weights=weights)
-            return {"x": estimated_position[0], "y": estimated_position[1]}
-        return None
-
-    def _adjust_trajectory(
-        self,
-        trajectory_segment: pd.DataFrame,
-        optimal_position: dict[str, float] | None,
-    ) -> pd.DataFrame:
-        """軌跡セグメントを最適位置に合わせて調整する."""
-        if optimal_position is None:
-            return trajectory_segment
-
-        # 軌跡セグメントの中心を計算
-        center = trajectory_segment.mean()
-
-        # 移動量を計算
-        delta_x = optimal_position["x"] - center["x"]
-        delta_y = optimal_position["y"] - center["y"]
-
-        # 軌跡を移動
-        adjusted_segment = trajectory_segment.copy()
-        adjusted_segment["x"] += delta_x
-        adjusted_segment["y"] += delta_y
-
-        return adjusted_segment
-
-    def _calculate_rssi_to_distance(self, rssi: float) -> float:
-        """RSSI値を距離に変換する(簡易的なモデル)."""
-        # 参考: https://iotandelectronics.wordpress.com/2016/10/07/how-to-calculate-distance-from-the-rssi-value-of-the-ble-beacon/
-        # 1m距離での理想的なRSSI値(デバイスによって異なる)
-        tx_power = -59
-        ratio = rssi * 1.0 / tx_power
-        if ratio < 1.0:
-            return ratio**10
-        return 0.89976 * (ratio**7.7095) + 0.111
