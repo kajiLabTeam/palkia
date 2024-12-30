@@ -12,10 +12,11 @@ from palkia.config.column_name import TIMESTAMP
 from palkia.core.positioning.floor_identification import FloorIdentifier, FloorInfo
 
 if TYPE_CHECKING:
-    from palkia.core.positioning.pdr import PDREstimator
     from palkia.core.map.floor_map import FloorMap
+    from palkia.core.positioning.pdr import PDREstimator
 
 
+# TODO: 軌跡補正のために拡張する必要性がある(補正classを内部で持たせてあげるといいかも?)
 class ThreeDimensionalEstimator:
     def __init__(
         self,
@@ -48,7 +49,7 @@ class ThreeDimensionalEstimator:
         # 気圧データから高度を推定
         height = self._estimate_height_from_pressure(baro_data)
 
-        # 3D軌跡の生成（高度情報を追加）
+        # 3D軌跡の生成(高度情報を追加)
         trajectory_3d = trajectory_2d.copy()
         trajectory_3d["z"] = np.interp(
             trajectory_3d[TIMESTAMP],
@@ -65,16 +66,14 @@ class ThreeDimensionalEstimator:
         )
 
         # 階層識別を実行
-        floor_info = self.floor_identifier.identify_floors(
+        return self.floor_identifier.identify_floors(
             baro_data=baro_data,
             trajectory=trajectory_with_pressure,
             floor_maps=floor_maps,
         )
 
-        return floor_info
-
     def _estimate_height_from_pressure(self, baro_data: pd.DataFrame) -> np.ndarray:
-        """気圧から高度への変換（簡易実装）."""
+        """気圧から高度への変換(簡易実装)."""
         pressure_sea_level = 1013.25  # hPa
         height = 44330 * (1 - (baro_data[PRESSURE] / pressure_sea_level) ** (1 / 5.255))
         return height.to_numpy()
