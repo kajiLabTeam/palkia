@@ -64,8 +64,6 @@ def main() -> None:
 
     ble_fp = pd.read_csv(BEACON_FP_PATH)
 
-    print(ble_fp[ble_fp["beacon_address"] == "C0:1C:4D:44:32:56"])
-
     ble_correction_trajectory = BLECorrector().correct_initial_direction_with_fp(
         correct_drift_trajectory,
         ble_data,

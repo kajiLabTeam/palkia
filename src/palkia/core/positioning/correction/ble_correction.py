@@ -88,7 +88,7 @@ class BLECorrector:
             rssi_value: 現在のRSSI値
             rssi_mean: FPデータのRSSI平均値
             rssi_std: FPデータのRSSI標準偏差
-            min_std: 最小標準偏差（ゼロ除算防止用）
+            min_std: 最小標準偏差(ゼロ除算防止用)
             min_weight: 最小重み
 
         Returns:
@@ -111,24 +111,25 @@ class BLECorrector:
         reference_distance: float = 1.0,
         min_weight: float = 1e-10,
     ) -> float:
-        """RSSIの値に基づいて重みを計算（パスロスモデル使用）.
+        """RSSIの値に基づいて重みを計算(パスロスモデル使用).
 
         Args:
             rssi_value: 現在のRSSI値
             reference_rssi: 基準距離での参照RSSI値
-            path_loss_exponent: パスロス指数（環境による、通常2-4の範囲）
-            reference_distance: 基準距離（メートル）
+            path_loss_exponent: パスロス指数(環境による、通常2-4の範囲)
+            reference_distance: 基準距離(メートル)
             min_weight: 最小重み
 
         Returns:
             float: 計算された重み
+
         """
-        # RSSIから距離を推定（対数距離損失モデル）
+        # RSSIから距離を推定(対数距離損失モデル)
         estimated_distance = reference_distance * 10 ** (
             (reference_rssi - rssi_value) / (10 * path_loss_exponent)
         )
 
-        # 距離の逆数を重みとして使用（距離が遠いほど重みが小さくなる）
+        # 距離の逆数を重みとして使用(距離が遠いほど重みが小さくなる)
         weight = 1 / (estimated_distance**2)
 
         return max(weight, min_weight)
@@ -151,7 +152,7 @@ class BLECorrector:
             rssi_std: FPデータのRSSI標準偏差
             reference_rssi: 基準距離での参照RSSI値
             path_loss_exponent: パスロス指数
-            alpha: ブレンド係数（0-1）、1に近いほどガウシアンモデルの影響が強くなる
+            alpha: ブレンド係数(0-1)、1に近いほどガウシアンモデルの影響が強くなる
             min_weight: 最小重み
 
         Returns:
@@ -186,10 +187,10 @@ class BLECorrector:
         weights = np.array(
             [
                 self._calculate_hybrid_weight(
-                    row["rssi_mean"],  # type: ignore
+                    row.loc["rssi_mean"],
                     target_rssi,
-                    row["rssi_std"],  # type: ignore
-                    self._get_alpha(row["count"]),  # type: ignore
+                    row.loc["rssi_std"],
+                    self._get_alpha(row.loc["count"]),
                 )
                 for _, row in beacon_fp.iterrows()
             ]
@@ -224,14 +225,14 @@ class BLECorrector:
     def _estimate_positions_from_fp(
         self, ble_data: pd.DataFrame, fp_data: pd.DataFrame
     ) -> pd.DataFrame:
-        """全てのBLEデータに対して位置を推定"""
+        """全てのBLEデータに対して位置を推定."""
         result_data = ble_data.copy()
         result_data["ble_x"] = 0.0
         result_data["ble_y"] = 0.0
 
         for idx, row in result_data.iterrows():
             x, y = self._estimate_beacon_position(
-                fp_data, row["bdaddress"], row["rssi"]
+                fp_data, row.loc["bdaddress"], row.loc["rssi"]
             )
             result_data.loc[idx, "ble_x"] = x
             result_data.loc[idx, "ble_y"] = y
