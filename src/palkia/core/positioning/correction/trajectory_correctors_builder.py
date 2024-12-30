@@ -17,8 +17,8 @@ class TrajectoryCorrectorsBuilder:
     def __init__(self, pdr_estimator: PDREstimator) -> None:
         self.pdr_estimator = pdr_estimator
         self._floor_map: FloorMap
-        self._gt_data: pd.DataFrame | None = None
-        self._ble_data: pd.DataFrame | None = None
+        self._gt_data: pd.DataFrame
+        self._ble_data: pd.DataFrame
 
     def with_floor_map(self, floor_map: FloorMap) -> "TrajectoryCorrectorsBuilder":
         self._floor_map = floor_map
@@ -35,7 +35,7 @@ class TrajectoryCorrectorsBuilder:
     def build(self) -> TrajectoryCorrector:
         drift_corrector = DriftCorrector({}, self.pdr_estimator, self._gt_data)
         map_matcher = MapMatcher({}, self.pdr_estimator, self._floor_map)
-        ble_corrector = BLECorrector()
+        ble_corrector = BLECorrector(ble_realtime_scans=self._ble_data)
 
         return TrajectoryCorrector(
             pdr_estimator=self.pdr_estimator,
