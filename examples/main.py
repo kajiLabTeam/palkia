@@ -27,9 +27,6 @@ def main() -> None:
         )
     )
 
-    # センサーデータの可視化
-    # plot_sensor_data(acc_data, gyro_data)
-
     # PDR推定器の初期化
     pdr_estimator = PDREstimator(
         EnhancedSensorData(
@@ -43,13 +40,13 @@ def main() -> None:
         TrajectoryCalculator(
             # flip_vertical=True,
             initial_point={
-                "x": gt_data[POS_X][0],
-                "y": gt_data[POS_Y][0],
+                "x": gt_data.loc[0, POS_X],
+                "y": gt_data.loc[0, POS_Y],
             },
         ),
     )
     # 軌跡の推定
-    floor_name = gt_data[FLOOR_NAME][0]
+    floor_name = gt_data.loc[0, FLOOR_NAME]
     floor_map = FloorMap(
         floor_name=floor_name,
         floor_map_path=FLOOR_MAP_PATH.format(floor_name, "bmp"),
