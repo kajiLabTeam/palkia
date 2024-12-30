@@ -78,12 +78,12 @@ def main() -> None:
         pdr_estimator,
     )
 
-    floor_info = three_demensional_estimator.estimate_3d_trajectory_with_floors(
+    floor_segments = three_demensional_estimator.estimate_3d_trajectory_with_floors(
         baro_data,
         floor_maps,
     )
 
-    plot_floor_trajectories(floor_info, floor_maps)
+    plot_floor_trajectories(floor_segments, floor_maps)
 
 
 if __name__ == "__main__":

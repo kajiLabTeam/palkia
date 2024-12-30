@@ -13,7 +13,7 @@ class PDRSession:
         self.sensor_data = enhanced_sensor_data
         self.raw_trajectory: pd.DataFrame | None = None
         self.current_trajectory: pd.DataFrame | None = None
-        self.floor_info: dict[int, FloorMap] | None = None
+        self.floor_segments: dict[int, FloorMap] | None = None
 
     def update_trajectory(self, new_trajectory: pd.DataFrame) -> None:
         """補正済み軌跡を更新."""

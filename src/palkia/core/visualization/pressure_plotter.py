@@ -30,7 +30,7 @@ plt.rc("legend", fontsize=MEDIUM_SIZE)
 
 def plot_pressure_analysis(
     baro_data: pd.DataFrame,
-    floor_info: dict[int, FloorInfo],
+    floor_segments: dict[int, FloorInfo],
     transitions: list[dict],
 ) -> None:
     """気圧データと階層推定の分析結果をプロット.
@@ -38,7 +38,7 @@ def plot_pressure_analysis(
     Args:
     ----
         baro_data: 気圧センサーデータ
-        floor_info: 階層ごとの情報
+        floor_segments: 階層ごとの情報
         transitions: 階層間の移動情報
 
     """
@@ -49,7 +49,7 @@ def plot_pressure_analysis(
     ax1.plot(baro_data["ts"], baro_data["pressure_smoothed"], "r-", label="Smoothed")
 
     # 階層区分
-    for floor, info in floor_info.items():
+    for floor, info in floor_segments.items():
         p_min, p_max = info.pressure_range
         ax1.axhspan(p_min, p_max, alpha=0.2, label=f"Floor {floor}")
 
@@ -68,7 +68,7 @@ def plot_pressure_analysis(
     # 階層推定結果
     floor_numbers = []
     times = []
-    for floor, info in floor_info.items():
+    for floor, info in floor_segments.items():
         for start, end in info.time_intervals:
             floor_numbers.extend([floor, floor])
             times.extend([start, end])

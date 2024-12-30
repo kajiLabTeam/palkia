@@ -105,12 +105,12 @@ def _plot_floor_trajectory(
 
 
 def plot_floor_trajectories(
-    floor_info_dict: dict[int, FloorInfo],
+    floor_segments_dict: dict[int, FloorInfo],
     floor_maps: dict[int, FloorMap],
     figsize: tuple[int, int] = (15, 10),
 ) -> None:
     """階層ごとの軌跡をプロット."""
-    n_floors = len(floor_info_dict)
+    n_floors = len(floor_segments_dict)
     if n_floors == 0:
         logger.warning("No floors detected!")
         return
@@ -135,7 +135,7 @@ def plot_floor_trajectories(
 
     # 全体の時間範囲を取得
     all_timestamps = []
-    for info in floor_info_dict.values():
+    for info in floor_segments_dict.values():
         all_timestamps.extend(info.trajectory[TIMESTAMP].tolist())
     time_min, time_max = min(all_timestamps), max(all_timestamps)
 
@@ -143,7 +143,7 @@ def plot_floor_trajectories(
     for ax in axes:
         ax.set_visible(False)
 
-    for i, (floor, info) in enumerate(sorted(floor_info_dict.items())):
+    for i, (floor, info) in enumerate(sorted(floor_segments_dict.items())):
         ax = axes[i]
         ax.set_visible(True)
 

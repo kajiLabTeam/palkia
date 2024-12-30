@@ -6,7 +6,7 @@ import numpy as np
 from sklearn.cluster import DBSCAN
 
 from palkia.config import PRESSURE, TIMESTAMP
-from palkia.core.positioning.floor_identification.floor_info import FloorInfo
+from palkia.core.positioning.floor_identification.floor_segments import FloorInfo
 
 if TYPE_CHECKING:
     import pandas as pd
@@ -73,16 +73,16 @@ class FloorIdentifier:
         # 階層ごとの気圧レベルを特定
         pressure_levels = self._group_pressure_levels(baro_data, stable_intervals)
 
-        # floor_infoオブジェクトの生成
-        floor_info = self._create_floor_info(pressure_levels, trajectory)
+        # floor_segmentsオブジェクトの生成
+        floor_segments = self._create_floor_segments(pressure_levels, trajectory)
 
         # FloorMapの関連付け
         if floor_maps is not None:
-            for floor_num, info in floor_info.items():
+            for floor_num, info in floor_segments.items():
                 if floor_num in floor_maps:
                     info.floor_map = floor_maps[floor_num]
 
-        return floor_info
+        return floor_segments
 
     def _preprocess_pressure_data(self, baro_data: pd.DataFrame) -> pd.DataFrame:
         """Preprocess pressure data with noise removal and smoothing.
@@ -238,7 +238,7 @@ class FloorIdentifier:
         )  # 圧力の高い順(低層階から)
         return dict(enumerate(pressures))
 
-    def _create_floor_info(
+    def _create_floor_segments(
         self, floor_pressures: dict[int, float], trajectory: pd.DataFrame
     ) -> dict[int, FloorInfo]:
         """Create FloorInfo objects for each identified floor.
@@ -253,7 +253,7 @@ class FloorIdentifier:
             Dictionary mapping floor numbers to FloorInfo objects.
 
         """
-        floor_info: dict[int, FloorInfo] = {}
+        floor_segments: dict[int, FloorInfo] = {}
 
         for floor_num, pressure in floor_pressures.items():
             pressure_range = (
@@ -266,14 +266,14 @@ class FloorIdentifier:
             )
             time_intervals = self._get_continuous_time_intervals(floor_trajectory)
 
-            floor_info[floor_num] = FloorInfo(
+            floor_segments[floor_num] = FloorInfo(
                 floor_number=floor_num,
                 pressure_range=pressure_range,
                 time_intervals=time_intervals,
                 trajectory=floor_trajectory,
             )
 
-        return floor_info
+        return floor_segments
 
     def _extract_floor_trajectory(
         self, trajectory: pd.DataFrame, pressure_range: tuple[float, float]

@@ -1,4 +1,4 @@
-# palkia/positioning/floor_identification/floor_info.py
+# palkia/positioning/floor_identification/floor_segments.py
 from __future__ import annotations
 
 from dataclasses import dataclass
