@@ -6,15 +6,7 @@ from palkia.config import (
     POS_Y,
 )
 from palkia.core.map.floor_map import FloorMap
-from palkia.core.positioning.correction import (
-    DriftCorrector,
-    MapMatcher,
-)
-from palkia.core.positioning.correction.ble_correction import BLECorrector
 from palkia.core.positioning.correction.trajectory_corrector import TrajectoryCorrector
-from palkia.core.positioning.correction.trajectory_correctors_builder import (
-    TrajectoryCorrectorsBuilder,
-)
 from palkia.core.positioning.pdr.orientation_estimator import OrientationEstimator
 from palkia.core.positioning.pdr.pdr_estimator import PDREstimator
 from palkia.core.positioning.pdr.step_estimator import StepEstimator
@@ -57,15 +49,15 @@ def main() -> None:
         dy=0.01,
     )
 
-    correct_trajectory = (
-        TrajectoryCorrectorsBuilder(pdr_estimator=pdr_estimator)
+    trajectory_corrector = (
+        TrajectoryCorrector.builder(pdr_estimator)
         .with_floor_map(floor_map)
         .with_ble_data(ble_data)
         .with_ground_truth(gt_data)
         .build()
     )
 
-    correct_trajectory.estimate_and_correct_trajectory()
+    correct_trajectory = trajectory_corrector.estimate_and_correct_trajectory()
 
     plot_trajectory(correct_trajectory, floor_map=floor_map)
 

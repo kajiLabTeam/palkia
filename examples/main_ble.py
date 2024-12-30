@@ -67,7 +67,7 @@ def main() -> None:
     ble_fp = pd.read_csv(BEACON_FP_PATH)
 
     ble_correction_trajectory = BLECorrector(
-        rssi_threshold=-75
+        ble_realtime_scans=ble_data, rssi_threshold=-75
     ).correct_initial_direction(
         correct_drift_trajectory,
         ble_data,

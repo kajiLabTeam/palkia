@@ -18,34 +18,38 @@ class Point2D:
 class BLECorrector:
     def __init__(
         self,
+        ble_realtime_scans: pd.DataFrame,
+        ble_fingerprints: pd.DataFrame | None = None,
         beacon_positions: pd.DataFrame | None = None,
         rssi_threshold: int = -70,
         time_window: int = 5,
     ) -> None:
-        self.beacon_positions = (
-            pd.read_csv(BEACON_LIST_PATH)
-            if beacon_positions is None
-            else beacon_positions
-        )
+        self.ble_realtime_scans = ble_realtime_scans
+        self.ble_fingerprints = ble_fingerprints
+        self.beacon_positions = beacon_positions
         self.rssi_threshold = rssi_threshold
         self.time_window = time_window
 
-    def correct_initial_direction(
-        self, trajectory: pd.DataFrame, ble_realtime_scans: pd.DataFrame
+    def correct_initial_direction_with_ble_positions(
+        self,
+        trajectory: pd.DataFrame,
     ) -> pd.DataFrame:
         """BLEデータを使用して軌跡を補正する.
 
         Args:
         ----
             trajectory: 補正する軌跡
-            ble_realtime_scans: BLEスキャンデータ
 
         Returns:
         -------
             BLE補正された軌跡
 
         """
-        strong_ble_scans = self._filter_strong_blescans(ble_realtime_scans)
+        if self.beacon_positions is None:
+            msg = "The attribute 'beacon_positions' is None."
+            raise ValueError(msg)
+
+        strong_ble_scans = self._filter_strong_blescans(self.ble_realtime_scans)
         strong_ble_merged = strong_ble_scans.merge(
             self.beacon_positions, on="bdaddress", how="left"
         ).rename(columns={"x": "ble_x", "y": "ble_y"})
@@ -62,12 +66,17 @@ class BLECorrector:
         self,
         trajectory: pd.DataFrame,
         ble_realtime_scans: pd.DataFrame,
-        fp_data: pd.DataFrame,
     ) -> pd.DataFrame:
         """FPデータを使用して軌跡を補正."""
+        if self.ble_fingerprints is None:
+            msg = "The attribute 'ble_fingerprints' is None."
+            raise ValueError(msg)
+
         strong_ble_scans = self._filter_strong_blescans(ble_realtime_scans)
         # 処理に時間がかかるため注意が必要
-        strong_ble_merged = self._estimate_positions_from_fp(strong_ble_scans, fp_data)
+        strong_ble_merged = self._estimate_positions_from_fp(
+            strong_ble_scans, self.ble_fingerprints
+        )
 
         initial_point = Point2D(x=trajectory["x"].iloc[0], y=trajectory["y"].iloc[0])
 
@@ -225,7 +234,7 @@ class BLECorrector:
         )
 
     def _estimate_positions_from_fp(
-        self, ble_realtime_scans: pd.DataFrame, fp_data: pd.DataFrame
+        self, ble_realtime_scans: pd.DataFrame, ble_fingerprints: pd.DataFrame
     ) -> pd.DataFrame:
         """全てのBLEデータに対して位置を推定."""
         result_data = ble_realtime_scans.copy()
@@ -234,7 +243,7 @@ class BLECorrector:
 
         for idx, row in result_data.iterrows():
             x, y = self._estimate_beacon_position(
-                fp_data, row.loc["bdaddress"], row.loc["rssi"]
+                ble_fingerprints, row.loc["bdaddress"], row.loc["rssi"]
             )
             print(x, y)
             result_data.loc[idx, "ble_x"] = x
