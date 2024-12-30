@@ -6,7 +6,6 @@ import numpy as np
 import pandas as pd
 
 from palkia.config.column_name import COORDINATE_X, COORDINATE_Y
-from palkia.config.path import BEACON_LIST_PATH
 
 
 @dataclass
@@ -205,7 +204,7 @@ class BLECorrector:
                 )
                 for _, row in beacon_fp.iterrows()
             ]
-        )  # type: ignore
+        )
 
         estimated_x = np.average(beacon_fp["x"], weights=weights)
         estimated_y = np.average(beacon_fp["y"], weights=weights)
@@ -245,7 +244,6 @@ class BLECorrector:
             x, y = self._estimate_beacon_position(
                 ble_fingerprints, row.loc["bdaddress"], row.loc["rssi"]
             )
-            print(x, y)
             result_data.loc[idx, "ble_x"] = x
             result_data.loc[idx, "ble_y"] = y
 
@@ -280,7 +278,6 @@ class BLECorrector:
                 ble_realtime_scans,
             ),
         )
-        print(f"Optimal angle: {optimal_angle}")
 
         return self._rotate_trajectory(trajectory, optimal_angle, initial_point)
 

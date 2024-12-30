@@ -1,3 +1,5 @@
+import pandas as pd
+
 from palkia.config import (
     FLOOR_MAP_PATH,
     FLOOR_NAME,
@@ -5,6 +7,7 @@ from palkia.config import (
     POS_X,
     POS_Y,
 )
+from palkia.config.path import BEACON_LIST_PATH
 from palkia.core.map.floor_map import FloorMap
 from palkia.core.positioning.correction.trajectory_corrector import TrajectoryCorrector
 from palkia.core.positioning.pdr.orientation_estimator import OrientationEstimator
@@ -17,8 +20,10 @@ from palkia.core.visualization import plot_trajectory
 
 
 def main() -> None:
-    acc_data, gyro_data, baro_data, _, gt_data, ble_data = load_sensor_data_from_log(
-        LOG_FILE_PATH,
+    acc_data, gyro_data, baro_data, _, gt_data, ble_realtime_scans = (
+        load_sensor_data_from_log(
+            LOG_FILE_PATH,
+        )
     )
 
     # PDR推定器の初期化
@@ -50,7 +55,9 @@ def main() -> None:
     trajectory_corrector = (
         TrajectoryCorrector.builder(pdr_estimator)
         .with_floor_map(floor_map)
-        .with_ble_data(ble_data)
+        .with_ble_data(
+            ble_realtime_scans, beacon_positions=pd.read_csv(BEACON_LIST_PATH)
+        )
         .with_ground_truth(gt_data)
         .build()
     )

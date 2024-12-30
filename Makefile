@@ -55,6 +55,10 @@ run_pressure:
 	cd examples && \
 	poetry run python main_pressure.py
 
+run_correct:
+	cd examples && \
+	poetry run python main_correct.py
+
 	
 make generate-project-summary:
 	poetry run python generate_project_summary.py

@@ -24,7 +24,7 @@ from palkia.core.visualization import plot_trajectory
 
 
 def main() -> None:
-    acc_data, gyro_data, baro_data, mag_data, gt_data, ble_data = (
+    acc_data, gyro_data, baro_data, mag_data, gt_data, ble_scans = (
         load_sensor_data_from_log(
             LOG_FILE_PATH,
         )
@@ -67,10 +67,11 @@ def main() -> None:
     ble_fp = pd.read_csv(BEACON_FP_PATH)
 
     ble_correction_trajectory = BLECorrector(
-        ble_realtime_scans=ble_data, rssi_threshold=-75
-    ).correct_initial_direction(
+        ble_realtime_scans=ble_scans,
+        rssi_threshold=-75,
+        beacon_positions=pd.read_csv(BEACON_FP_PATH),
+    ).correct_initial_direction_with_ble_positions(
         correct_drift_trajectory,
-        ble_data,
     )
 
     plot_trajectory(ble_correction_trajectory, floor_map=floor_map)

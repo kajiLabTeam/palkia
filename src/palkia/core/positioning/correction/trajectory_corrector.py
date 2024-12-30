@@ -1,15 +1,8 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict
-
-import numpy as np
+from typing import TYPE_CHECKING
 
 from palkia.core.map import FloorMap
-from palkia.core.positioning.pdr import (
-    OrientationEstimator,
-    StepEstimator,
-    TrajectoryCalculator,
-)
 
 from .ble_correction import BLECorrector
 from .drift import DriftCorrector
@@ -68,6 +61,7 @@ class TrajectoryCorrectorsBuilder:
         self._ble_realtime_scans: pd.DataFrame
         self._beacon_positions: pd.DataFrame | None
         self._ble_fingerprints: pd.DataFrame | None
+        self._ble_config: dict = {"rssi_threshold": -70, "time_window": 5}
 
     def with_floor_map(self, floor_map: FloorMap) -> TrajectoryCorrectorsBuilder:
         self._floor_map = floor_map
@@ -82,10 +76,18 @@ class TrajectoryCorrectorsBuilder:
         ble_realtime_scans: pd.DataFrame,
         ble_fingerprints: pd.DataFrame | None = None,
         beacon_positions: pd.DataFrame | None = None,
+        rssi_threshold: int | None = None,
+        time_window: int | None = None,
     ) -> TrajectoryCorrectorsBuilder:
         self._ble_realtime_scans = ble_realtime_scans
         self._beacon_positions = beacon_positions
         self._ble_fingerprints = ble_fingerprints
+
+        # パラメータが指定された場合のみ更新
+        if rssi_threshold is not None:
+            self._ble_config["rssi_threshold"] = rssi_threshold
+        if time_window is not None:
+            self._ble_config["time_window"] = time_window
 
         return self
 
@@ -96,6 +98,8 @@ class TrajectoryCorrectorsBuilder:
             ble_realtime_scans=self._ble_realtime_scans,
             beacon_positions=self._beacon_positions,
             ble_fingerprints=self._ble_fingerprints,
+            rssi_threshold=self._ble_config["rssi_threshold"],
+            time_window=self._ble_config["time_window"],
         )
 
         return TrajectoryCorrector(
