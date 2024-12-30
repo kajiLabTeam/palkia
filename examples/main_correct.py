@@ -1,5 +1,3 @@
-import pandas as pd
-
 from palkia.config import (
     FLOOR_MAP_PATH,
     FLOOR_NAME,
@@ -7,12 +5,15 @@ from palkia.config import (
     POS_X,
     POS_Y,
 )
-from palkia.config.path import BEACON_FP_PATH
 from palkia.core.map.floor_map import FloorMap
 from palkia.core.positioning.correction import (
-    BLECorrector,
     DriftCorrector,
     MapMatcher,
+)
+from palkia.core.positioning.correction.ble_correction import BLECorrector
+from palkia.core.positioning.correction.trajectory_corrector import TrajectoryCorrector
+from palkia.core.positioning.correction.trajectory_correctors_builder import (
+    TrajectoryCorrectorsBuilder,
 )
 from palkia.core.positioning.pdr.orientation_estimator import OrientationEstimator
 from palkia.core.positioning.pdr.pdr_estimator import PDREstimator
@@ -36,21 +37,19 @@ def main() -> None:
             acc_data,
             gyro_data,
         ),
-        StepEstimator(
-            # step_length_model_path=STEP_LENGTH_MODEL_PATH,
-        ),
+        StepEstimator(),
         OrientationEstimator(),
         TrajectoryCalculator(
             # flip_vertical=True,
             initial_point={
-                "x": gt_data[POS_X].iloc[0],
-                "y": gt_data[POS_Y].iloc[0],
+                "x": gt_data.loc[0, POS_X],
+                "y": gt_data.loc[0, POS_Y],
             },
         ),
     )
 
     # 軌跡の推定
-    floor_name = gt_data[FLOOR_NAME].iloc[0]
+    floor_name = gt_data.loc[0, FLOOR_NAME]
     floor_map = FloorMap(
         floor_name=floor_name,
         floor_map_path=FLOOR_MAP_PATH.format(floor_name, "bmp"),
@@ -58,28 +57,17 @@ def main() -> None:
         dy=0.01,
     )
 
-    trajectory = pdr_estimator.estimate_trajectory()
-
-    correct_drift_trajectory = DriftCorrector(
-        config={}, pdr_estimator=pdr_estimator, gt_data=gt_data
-    ).correct()
-
-    ble_fp = pd.read_csv(BEACON_FP_PATH)
-
-    ble_correction_trajectory = BLECorrector(
-        rssi_threshold=-75
-    ).correct_initial_direction(
-        correct_drift_trajectory,
-        ble_data,
+    correct_trajectory = (
+        TrajectoryCorrectorsBuilder(pdr_estimator=pdr_estimator)
+        .with_floor_map(floor_map)
+        .with_ble_data(ble_data)
+        .with_ground_truth(gt_data)
+        .build()
     )
 
-    plot_trajectory(ble_correction_trajectory, floor_map=floor_map)
+    correct_trajectory.estimate_and_correct_trajectory()
 
-    walkable_trajectory = MapMatcher(
-        config={}, pdr_estimator=pdr_estimator, floor_map=floor_map
-    ).correct_unwalkable_points(ble_correction_trajectory)
-
-    plot_trajectory(walkable_trajectory, floor_map=floor_map)
+    plot_trajectory(correct_trajectory, floor_map=floor_map)
 
 
 if __name__ == "__main__":

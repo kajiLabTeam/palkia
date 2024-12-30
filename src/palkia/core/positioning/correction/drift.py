@@ -19,7 +19,10 @@ if TYPE_CHECKING:
 
 class DriftCorrector:
     def __init__(
-        self, config: dict[str, Any], pdr_estimator: PDREstimator, gt_data: pd.DataFrame
+        self,
+        config: dict[str, Any],
+        pdr_estimator: PDREstimator,
+        gt_data: pd.DataFrame | None,
     ) -> None:
         self.pdr_estimator = pdr_estimator
         self.gt_data = gt_data
@@ -30,7 +33,14 @@ class DriftCorrector:
         angle_df = self._convert_gyro_to_angle(
             self.pdr_estimator.enhanced_sensor_data.get_gyro_data()
         )
-        optimal_drift = self._search_optimal_drift_from_angle(angle_df)
+
+        if self.gt_data is None:
+            optimal_drift = 0.005
+        else:
+            optimal_drift = self._search_optimal_drift_from_angle(
+                angle_df, self.gt_data
+            )
+
         corrected_angle_df = self._apply_drift_correction(angle_df, optimal_drift)
 
         self.pdr_estimator.enhanced_sensor_data.update_corrected_orrientation_df(
@@ -64,7 +74,9 @@ class DriftCorrector:
             (last_row[COORDINATE_X] - gt.x) ** 2 + (last_row[COORDINATE_Y] - gt.y) ** 2
         )
 
-    def _search_optimal_drift_from_angle(self, angle_df: pd.DataFrame) -> float:
+    def _search_optimal_drift_from_angle(
+        self, angle_df: pd.DataFrame, gt_data: pd.DataFrame
+    ) -> float:
         start, end = self.drift_search_range
         drift_range = np.arange(start, end, self.drift_search_step)
 
@@ -73,9 +85,7 @@ class DriftCorrector:
             displacement_df = self.pdr_estimator.estimate_trajectory_from_orientation(
                 adjusted_angle
             )
-            return self._compute_euclidean_distance(
-                displacement_df, self.gt_data.iloc[1]
-            )
+            return self._compute_euclidean_distance(displacement_df, gt_data.iloc[1])
 
         drift_and_distance = [
             (drift, evaluate_drift(drift)) for drift in drift_range if abs(drift) < 0.01
