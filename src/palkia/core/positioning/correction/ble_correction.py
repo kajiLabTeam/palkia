@@ -64,14 +64,13 @@ class BLECorrector:
     def correct_initial_direction_with_fp(
         self,
         trajectory: pd.DataFrame,
-        ble_realtime_scans: pd.DataFrame,
     ) -> pd.DataFrame:
         """FPデータを使用して軌跡を補正."""
         if self.ble_fingerprints is None:
             msg = "The attribute 'ble_fingerprints' is None."
             raise ValueError(msg)
 
-        strong_ble_scans = self._filter_strong_blescans(ble_realtime_scans)
+        strong_ble_scans = self._filter_strong_blescans(self.ble_realtime_scans)
         # 処理に時間がかかるため注意が必要
         strong_ble_merged = self._estimate_positions_from_fp(
             strong_ble_scans, self.ble_fingerprints

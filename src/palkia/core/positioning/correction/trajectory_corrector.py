@@ -36,16 +36,22 @@ class TrajectoryCorrector:
         trajectory = self.drift_corrector.correct()
 
         if self.ble_corrector is not None:
-            trajectory = (
-                self.ble_corrector.correct_initial_direction_with_ble_positions(
+            if self.ble_corrector.ble_fingerprints is not None:
+                trajectory = self.ble_corrector.correct_initial_direction_with_fp(
                     trajectory
                 )
-            )
+            elif self.ble_corrector.beacon_positions is not None:
+                trajectory = (
+                    self.ble_corrector.correct_initial_direction_with_ble_positions(
+                        trajectory
+                    )
+                )
+
         elif self.map_matcher is not None:
             trajectory = self.map_matcher.correct_initial_direction()
 
-        if self.map_matcher is not None:
-            trajectory = self.map_matcher.correct_unwalkable_points(trajectory)
+        # if self.map_matcher is not None:
+        #     trajectory = self.map_matcher.correct_unwalkable_points(trajectory)
 
         return trajectory
 
