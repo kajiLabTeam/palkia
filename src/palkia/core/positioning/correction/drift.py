@@ -29,7 +29,7 @@ class DriftCorrector:
         self.drift_search_range = config.get("drift_search_range", (-0.05, 0.05))
         self.drift_search_step = config.get("drift_search_step", 0.001)
 
-    def correct(self) -> pd.DataFrame:
+    def correct_drift(self) -> pd.DataFrame:
         angle_df = self._convert_gyro_to_angle(
             self.pdr_estimator.enhanced_sensor_data.get_gyro_data()
         )

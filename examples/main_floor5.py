@@ -71,7 +71,7 @@ def main() -> None:
 
     correct_drift_trajectory = DriftCorrector(
         config={}, pdr_estimator=pdr_estimator, gt_data=gt_data
-    ).correct()
+    ).correct_drift()
 
     plot_trajectory(correct_drift_trajectory, floor_map=floor_map)
 

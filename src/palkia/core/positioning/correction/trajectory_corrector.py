@@ -33,7 +33,7 @@ class TrajectoryCorrector:
 
     def estimate_and_correct_trajectory(self) -> pd.DataFrame:
         trajectory = self.pdr_estimator.estimate_trajectory()
-        trajectory = self.drift_corrector.correct()
+        trajectory = self.drift_corrector.correct_drift()
 
         if self.ble_corrector is not None:
             if self.ble_corrector.ble_fingerprints is not None:
