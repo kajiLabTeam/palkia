@@ -13,6 +13,9 @@ from palkia.core.positioning.floor_identification import FloorIdentifier, FloorI
 
 if TYPE_CHECKING:
     from palkia.core.map.floor_map import FloorMap
+    from palkia.core.positioning.correction.trajectory_corrector import (
+        TrajectoryCorrector,
+    )
     from palkia.core.positioning.pdr import PDREstimator
 
 
@@ -20,11 +23,9 @@ if TYPE_CHECKING:
 class ThreeDimensionalEstimator:
     def __init__(
         self,
-        pdr_estimator: PDREstimator,
-        floor_identifier: FloorIdentifier | None = None,
+        trajectory_corrector: TrajectoryCorrector,
     ) -> None:
-        self.pdr_estimator = pdr_estimator
-        self.floor_identifier = floor_identifier or FloorIdentifier()
+        self.trajectory_corrector = trajectory_corrector
 
     def estimate_3d_trajectory_with_floors(
         self,
@@ -44,7 +45,7 @@ class ThreeDimensionalEstimator:
 
         """
         # まず基本の軌跡を推定
-        trajectory_2d = self.pdr_estimator.estimate_trajectory()
+        trajectory_2d = self.trajectory_corrector.estimate_and_correct_trajectory()
 
         # 気圧データから高度を推定
         height = self._estimate_height_from_pressure(baro_data)
@@ -66,7 +67,7 @@ class ThreeDimensionalEstimator:
         )
 
         # 階層識別を実行
-        return self.floor_identifier.identify_floors(
+        return FloorIdentifier().identify_floors(
             baro_data=baro_data,
             trajectory=trajectory_with_pressure,
             floor_maps=floor_maps,

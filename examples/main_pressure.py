@@ -9,6 +9,7 @@ from palkia.config import (
 )
 from palkia.core.map.floor_map import FloorMap
 from palkia.core.positioning.correction import DriftCorrector, MapMatcher
+from palkia.core.positioning.correction.trajectory_corrector import TrajectoryCorrector
 from palkia.core.positioning.pdr.orientation_estimator import OrientationEstimator
 from palkia.core.positioning.pdr.pdr_estimator import PDREstimator
 from palkia.core.positioning.pdr.step_estimator import StepEstimator
@@ -53,8 +54,8 @@ def main() -> None:
         TrajectoryCalculator(
             flip_vertical=True,
             initial_point={
-                "x": gt_data[POS_X][0],
-                "y": gt_data[POS_Y][0],
+                "x": gt_data.loc[0, POS_X],
+                "y": gt_data.loc[0, POS_Y],
             },
         ),
     )
@@ -74,8 +75,15 @@ def main() -> None:
         ),
     }
 
+    trajectory_corrector = (
+        TrajectoryCorrector.builder(pdr_estimator)
+        .with_floor_map(floor_maps[0])
+        .with_ground_truth(gt_data)
+        .build()
+    )
+
     three_demensional_estimator = ThreeDimensionalEstimator(
-        pdr_estimator,
+        trajectory_corrector,
     )
 
     floor_segments = three_demensional_estimator.estimate_3d_trajectory_with_floors(

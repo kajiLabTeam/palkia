@@ -81,11 +81,11 @@ def main() -> None:
 
     plot_trajectory(correct_map_matching_trajectory, floor_map=floor_map)
 
-    walkable_trajectory = MapMatcher(
-        config={}, pdr_estimator=pdr_estimator, floor_map=floor_map
-    ).correct_unwalkable_points(correct_map_matching_trajectory)
+    # walkable_trajectory = MapMatcher(
+    #     config={}, pdr_estimator=pdr_estimator, floor_map=floor_map
+    # ).correct_unwalkable_points(correct_map_matching_trajectory)
 
-    plot_trajectory(walkable_trajectory, floor_map=floor_map)
+    # plot_trajectory(walkable_trajectory, floor_map=floor_map)
 
     # # Ground truthとの比較（オプション）
     # if not gt_data.empty:

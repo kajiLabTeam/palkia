@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from palkia.core.map import FloorMap
+from palkia.core.visualization.trajectory_plotter import plot_trajectory
 
 from .ble_correction import BLECorrector
 from .drift import DriftCorrector
@@ -22,8 +23,8 @@ class TrajectoryCorrector:
         self,
         pdr_estimator: PDREstimator,
         drift_corrector: DriftCorrector,
-        map_matcher: MapMatcher,
-        ble_corrector: BLECorrector,
+        map_matcher: MapMatcher | None,
+        ble_corrector: BLECorrector | None,
     ) -> None:
         self.pdr_estimator = pdr_estimator
         self.drift_corrector = drift_corrector
@@ -56,18 +57,20 @@ class TrajectoryCorrector:
 class TrajectoryCorrectorsBuilder:
     def __init__(self, pdr_estimator: PDREstimator) -> None:
         self.pdr_estimator = pdr_estimator
-        self._floor_map: FloorMap
-        self._gt_data: pd.DataFrame
-        self._ble_realtime_scans: pd.DataFrame
+        self._floor_map: FloorMap | None = None
+        self._gt_data: pd.DataFrame | None = None
+        self._ble_realtime_scans: pd.DataFrame | None = None
         self._beacon_positions: pd.DataFrame | None
         self._ble_fingerprints: pd.DataFrame | None
-        self._ble_config: dict = {"rssi_threshold": -70, "time_window": 5}
+        self._ble_config: dict = {"rssi_threshold": -75, "time_window": 5}
 
     def with_floor_map(self, floor_map: FloorMap) -> TrajectoryCorrectorsBuilder:
         self._floor_map = floor_map
         return self
 
-    def with_ground_truth(self, gt_data: pd.DataFrame) -> TrajectoryCorrectorsBuilder:
+    def with_ground_truth(
+        self, gt_data: pd.DataFrame | None = None
+    ) -> TrajectoryCorrectorsBuilder:
         self._gt_data = gt_data
         return self
 
@@ -93,13 +96,21 @@ class TrajectoryCorrectorsBuilder:
 
     def build(self) -> TrajectoryCorrector:
         drift_corrector = DriftCorrector({}, self.pdr_estimator, self._gt_data)
-        map_matcher = MapMatcher({}, self.pdr_estimator, self._floor_map)
-        ble_corrector = BLECorrector(
-            ble_realtime_scans=self._ble_realtime_scans,
-            beacon_positions=self._beacon_positions,
-            ble_fingerprints=self._ble_fingerprints,
-            rssi_threshold=self._ble_config["rssi_threshold"],
-            time_window=self._ble_config["time_window"],
+        map_matcher = (
+            MapMatcher({}, self.pdr_estimator, self._floor_map)
+            if self._floor_map is not None
+            else None
+        )
+        ble_corrector = (
+            BLECorrector(
+                ble_realtime_scans=self._ble_realtime_scans,
+                beacon_positions=self._beacon_positions,
+                ble_fingerprints=self._ble_fingerprints,
+                rssi_threshold=self._ble_config["rssi_threshold"],
+                time_window=self._ble_config["time_window"],
+            )
+            if self._ble_realtime_scans is not None
+            else None
         )
 
         return TrajectoryCorrector(
