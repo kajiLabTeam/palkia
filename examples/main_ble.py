@@ -11,7 +11,7 @@ from palkia.config.path import BEACON_FP_PATH, BEACON_LIST_PATH
 from palkia.core.map.floor_map import FloorMap
 from palkia.core.positioning.correction import (
     DriftCorrector,
-    MapMatcher,
+    MapMatchCorrector,
     WirelessSignalCorrector,
 )
 from palkia.core.positioning.pdr.orientation_estimator import OrientationEstimator
@@ -76,7 +76,7 @@ def main() -> None:
 
     plot_trajectory(ble_correction_trajectory, floor_map=floor_map)
 
-    walkable_trajectory = MapMatcher(
+    walkable_trajectory = MapMatchCorrector(
         config={}, pdr_estimator=pdr_estimator, floor_map=floor_map
     ).correct_unwalkable_points(ble_correction_trajectory)
 

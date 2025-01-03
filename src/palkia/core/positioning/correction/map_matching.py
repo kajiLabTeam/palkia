@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from palkia.core.positioning.pdr import PDREstimator
 
 
-class MapMatcher:
+class MapMatchCorrector:
     def __init__(
         self, config: dict[str, Any], pdr_estimator: PDREstimator, floor_map: FloorMap
     ) -> None:

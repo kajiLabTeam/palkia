@@ -8,7 +8,7 @@ from palkia.config import (
     TIMESTAMP,
 )
 from palkia.core.map.floor_map import FloorMap
-from palkia.core.positioning.correction import DriftCorrector, MapMatcher
+from palkia.core.positioning.correction import DriftCorrector, MapMatchCorrector
 from palkia.core.positioning.correction.trajectory_corrector import TrajectoryCorrector
 from palkia.core.positioning.pdr.orientation_estimator import OrientationEstimator
 from palkia.core.positioning.pdr.pdr_estimator import PDREstimator

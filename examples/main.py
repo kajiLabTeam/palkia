@@ -10,7 +10,7 @@ from palkia.config import (
     TIMESTAMP,
 )
 from palkia.core.map.floor_map import FloorMap
-from palkia.core.positioning.correction import DriftCorrector, MapMatcher
+from palkia.core.positioning.correction import DriftCorrector, MapMatchCorrector
 from palkia.core.positioning.pdr.orientation_estimator import OrientationEstimator
 from palkia.core.positioning.pdr.pdr_estimator import PDREstimator
 from palkia.core.positioning.pdr.step_estimator import StepEstimator
@@ -64,13 +64,13 @@ def main() -> None:
     # 推定軌跡の可視化
     plot_trajectory(correct_drift_trajectory, floor_map=floor_map)
 
-    correct_map_matching_trajectory = MapMatcher(
+    correct_map_matching_trajectory = MapMatchCorrector(
         config={}, pdr_estimator=pdr_estimator, floor_map=floor_map
     ).correct_initial_direction()
 
     plot_trajectory(correct_map_matching_trajectory, floor_map=floor_map)
 
-    walkable_trajectory = MapMatcher(
+    walkable_trajectory = MapMatchCorrector(
         config={}, pdr_estimator=pdr_estimator, floor_map=floor_map
     ).correct_unwalkable_points(correct_map_matching_trajectory)
 

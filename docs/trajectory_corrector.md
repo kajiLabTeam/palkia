@@ -4,7 +4,7 @@ classDiagram
     class TrajectoryCorrector {
         -PDREstimator pdr_estimator
         -DriftCorrector drift_corrector
-        -MapMatcher map_matcher
+        -MapMatchCorrector map_match_corrector
         -WirelessSignalCorrector ble_corrector
         +estimate_and_correct_trajectory()
     }
@@ -24,7 +24,7 @@ classDiagram
         +correct_drift()
     }
 
-    class MapMatcher {
+    class MapMatchCorrector {
         +correct_initial_direction()
         +correct_unwalkable_points()
     }
@@ -36,7 +36,7 @@ classDiagram
 
     TrajectoryCorrector ..> TrajectoryCorrectorsBuilder : creates
     TrajectoryCorrector --* DriftCorrector : contains
-    TrajectoryCorrector --* MapMatcher : contains
+    TrajectoryCorrector --* MapMatchCorrector : contains
     TrajectoryCorrector --* WirelessSignalCorrector : contains
 
 ```

@@ -6,7 +6,7 @@ from palkia.core.map import FloorMap
 from palkia.core.visualization.trajectory_plotter import plot_trajectory
 
 from .drift import DriftCorrector
-from .map_matching import MapMatcher
+from .map_matching import MapMatchCorrector
 from .wireless_signal_corrector import WirelessSignalCorrector
 
 if TYPE_CHECKING:
@@ -23,12 +23,12 @@ class TrajectoryCorrector:
         self,
         pdr_estimator: PDREstimator,
         drift_corrector: DriftCorrector,
-        map_matcher: MapMatcher | None,
+        map_match_corrector: MapMatchCorrector | None,
         ble_corrector: WirelessSignalCorrector | None,
     ) -> None:
         self.pdr_estimator = pdr_estimator
         self.drift_corrector = drift_corrector
-        self.map_matcher = map_matcher
+        self.map_match_corrector = map_match_corrector
         self.ble_corrector = ble_corrector
 
     def estimate_and_correct_trajectory(self) -> pd.DataFrame:
@@ -47,11 +47,11 @@ class TrajectoryCorrector:
                     )
                 )
 
-        elif self.map_matcher is not None:
-            trajectory = self.map_matcher.correct_initial_direction()
+        elif self.map_match_corrector is not None:
+            trajectory = self.map_match_corrector.correct_initial_direction()
 
-        # if self.map_matcher is not None:
-        #     trajectory = self.map_matcher.correct_unwalkable_points(trajectory)
+        # if self.map_match_corrector is not None:
+        #     trajectory = self.map_match_corrector.correct_unwalkable_points(trajectory)
 
         return trajectory
 
@@ -102,8 +102,8 @@ class TrajectoryCorrectorsBuilder:
 
     def build(self) -> TrajectoryCorrector:
         drift_corrector = DriftCorrector({}, self.pdr_estimator, self._gt_data)
-        map_matcher = (
-            MapMatcher({}, self.pdr_estimator, self._floor_map)
+        map_match_corrector = (
+            MapMatchCorrector({}, self.pdr_estimator, self._floor_map)
             if self._floor_map is not None
             else None
         )
@@ -122,6 +122,6 @@ class TrajectoryCorrectorsBuilder:
         return TrajectoryCorrector(
             pdr_estimator=self.pdr_estimator,
             drift_corrector=drift_corrector,
-            map_matcher=map_matcher,
+            map_match_corrector=map_match_corrector,
             ble_corrector=ble_corrector,
         )
