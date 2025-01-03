@@ -25,7 +25,9 @@ class DriftCorrector:
         gt_data: pd.DataFrame | None,
     ) -> None:
         self.pdr_estimator = pdr_estimator
+        # TODO: gt_dataよりground_truth_dataの方がわかりやすいかも
         self.gt_data = gt_data
+        # TODO: configは使用するのかどうか検討した方がいい
         self.drift_search_range = config.get("drift_search_range", (-0.05, 0.05))
         self.drift_search_step = config.get("drift_search_step", 0.001)
 

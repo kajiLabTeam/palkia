@@ -26,6 +26,9 @@ def main() -> None:
         )
     )
 
+    print(ble_realtime_scans[ble_realtime_scans["rssi"] > -70])
+    print(len(ble_realtime_scans[ble_realtime_scans["rssi"] > -70]))
+
     # PDR推定器の初期化
     pdr_estimator = PDREstimator(
         EnhancedSensorData(
@@ -56,7 +59,9 @@ def main() -> None:
         TrajectoryCorrector.builder(pdr_estimator)
         .with_floor_map(floor_map)
         .with_ble_data(
-            ble_realtime_scans, beacon_positions=pd.read_csv(BEACON_LIST_PATH)
+            ble_realtime_scans,
+            beacon_positions=pd.read_csv(BEACON_LIST_PATH),
+            rssi_threshold=-75,
         )
         .with_ground_truth(gt_data)
         .build()

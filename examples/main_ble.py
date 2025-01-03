@@ -23,7 +23,6 @@ from palkia.core.sensor_processing.enhanced_sensor_data import EnhancedSensorDat
 from palkia.core.visualization import plot_trajectory
 
 
-
 def main() -> None:
     acc_data, gyro_data, baro_data, mag_data, gt_data, ble_scans = (
         load_sensor_data_from_log(
