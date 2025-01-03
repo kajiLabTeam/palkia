@@ -24,25 +24,25 @@ class TrajectoryCorrector:
         pdr_estimator: PDREstimator,
         drift_corrector: DriftCorrector,
         map_match_corrector: MapMatchCorrector | None,
-        ble_corrector: WirelessSignalCorrector | None,
+        wireless_signal_corrector: WirelessSignalCorrector | None,
     ) -> None:
         self.pdr_estimator = pdr_estimator
         self.drift_corrector = drift_corrector
         self.map_match_corrector = map_match_corrector
-        self.ble_corrector = ble_corrector
+        self.wireless_signal_corrector = wireless_signal_corrector
 
     def estimate_and_correct_trajectory(self) -> pd.DataFrame:
         trajectory = self.pdr_estimator.estimate_trajectory()
         trajectory = self.drift_corrector.correct_drift()
 
-        if self.ble_corrector is not None:
-            if self.ble_corrector.signal_fingerprints is not None:
-                trajectory = self.ble_corrector.correct_initial_direction_with_fp(
+        if self.wireless_signal_corrector is not None:
+            if self.wireless_signal_corrector.signal_fingerprints is not None:
+                trajectory = self.wireless_signal_corrector.correct_initial_direction_with_fp(
                     trajectory
                 )
-            elif self.ble_corrector.transmitter_positions is not None:
+            elif self.wireless_signal_corrector.transmitter_positions is not None:
                 trajectory = (
-                    self.ble_corrector.correct_initial_direction_with_transmitter_positions(
+                    self.wireless_signal_corrector.correct_initial_direction_with_transmitter_positions(
                         trajectory
                     )
                 )
@@ -107,7 +107,7 @@ class TrajectoryCorrectorsBuilder:
             if self._floor_map is not None
             else None
         )
-        ble_corrector = (
+        wireless_signal_corrector = (
             WirelessSignalCorrector(
                 signal_realtime_scans=self._ble_realtime_scans,
                 transmitter_positions=self._beacon_positions,
@@ -123,5 +123,5 @@ class TrajectoryCorrectorsBuilder:
             pdr_estimator=self.pdr_estimator,
             drift_corrector=drift_corrector,
             map_match_corrector=map_match_corrector,
-            ble_corrector=ble_corrector,
+            wireless_signal_corrector=wireless_signal_corrector,
         )

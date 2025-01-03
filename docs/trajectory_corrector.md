@@ -5,7 +5,7 @@ classDiagram
         -PDREstimator pdr_estimator
         -DriftCorrector drift_corrector
         -MapMatchCorrector map_match_corrector
-        -WirelessSignalCorrector ble_corrector
+        -WirelessSignalCorrector wireless_signal_corrector
         +estimate_and_correct_trajectory()
     }
 
