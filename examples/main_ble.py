@@ -7,12 +7,12 @@ from palkia.config import (
     POS_X,
     POS_Y,
 )
-from palkia.config.path import BEACON_FP_PATH
+from palkia.config.path import BEACON_FP_PATH, BEACON_LIST_PATH
 from palkia.core.map.floor_map import FloorMap
 from palkia.core.positioning.correction import (
-    BLECorrector,
     DriftCorrector,
     MapMatcher,
+    WirelessSignalCorrector,
 )
 from palkia.core.positioning.pdr.orientation_estimator import OrientationEstimator
 from palkia.core.positioning.pdr.pdr_estimator import PDREstimator
@@ -24,7 +24,7 @@ from palkia.core.visualization import plot_trajectory
 
 
 def main() -> None:
-    acc_data, gyro_data, baro_data, mag_data, gt_data, ble_scans = (
+    acc_data, gyro_data, baro_data, mag_data, gt_data, signal_realtime_scans = (
         load_sensor_data_from_log(
             LOG_FILE_PATH,
         )
@@ -66,11 +66,11 @@ def main() -> None:
 
     ble_fp = pd.read_csv(BEACON_FP_PATH)
 
-    ble_correction_trajectory = BLECorrector(
-        ble_realtime_scans=ble_scans,
+    ble_correction_trajectory = WirelessSignalCorrector(
+        signal_realtime_scans=signal_realtime_scans,
         rssi_threshold=-75,
-        beacon_positions=pd.read_csv(BEACON_FP_PATH),
-    ).correct_initial_direction_with_ble_positions(
+        transmitter_positions=pd.read_csv(BEACON_LIST_PATH),
+    ).correct_initial_direction_with_transmitter_positions(
         correct_drift_trajectory,
     )
 

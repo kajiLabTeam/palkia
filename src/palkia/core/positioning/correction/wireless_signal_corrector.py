@@ -5,7 +5,7 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 
-from palkia.config.column_name import COORDINATE_X, COORDINATE_Y
+from palkia.config.column_name import COORDINATE_X, COORDINATE_Y, TRANSMITTER_ID
 
 
 @dataclass
@@ -14,26 +14,26 @@ class Point2D:
     y: float
 
 
-class BLECorrector:
+class WirelessSignalCorrector:
     def __init__(
         self,
-        ble_realtime_scans: pd.DataFrame,
-        ble_fingerprints: pd.DataFrame | None = None,
-        beacon_positions: pd.DataFrame | None = None,
+        signal_realtime_scans: pd.DataFrame,
+        signal_fingerprints: pd.DataFrame | None = None,
+        transmitter_positions: pd.DataFrame | None = None,
         rssi_threshold: int = -70,
         time_window: int = 5,
     ) -> None:
-        self.ble_realtime_scans = ble_realtime_scans
-        self.ble_fingerprints = ble_fingerprints
-        self.beacon_positions = beacon_positions
+        self.signal_realtime_scans = signal_realtime_scans
+        self.signal_fingerprints = signal_fingerprints
+        self.transmitter_positions = transmitter_positions
         self.rssi_threshold = rssi_threshold
         self.time_window = time_window
 
-    def correct_initial_direction_with_ble_positions(
+    def correct_initial_direction_with_transmitter_positions(
         self,
         trajectory: pd.DataFrame,
     ) -> pd.DataFrame:
-        """BLEデータを使用して軌跡を補正する.
+        """データを使用して軌跡を補正する.
 
         Args:
         ----
@@ -41,24 +41,24 @@ class BLECorrector:
 
         Returns:
         -------
-            BLE補正された軌跡
+            信号補正された軌跡
 
         """
-        if self.beacon_positions is None:
-            msg = "The attribute 'beacon_positions' is None."
+        if self.transmitter_positions is None:
+            msg = "The attribute 'transmitter_positions' is None."
             raise ValueError(msg)
 
-        strong_ble_scans = self._filter_strong_blescans(self.ble_realtime_scans)
-        strong_ble_merged = strong_ble_scans.merge(
-            self.beacon_positions, on="bdaddress", how="left"
-        ).rename(columns={"x": "ble_x", "y": "ble_y"})
+        strong_signal_scans = self._filter_strong_signal_scans(self.signal_realtime_scans)
+        strong_signal_merged = strong_signal_scans.merge(
+            self.transmitter_positions, on=TRANSMITTER_ID, how="left"
+        ).rename(columns={"x": "transmitter_x", "y": "transmitter_y"})
 
         initial_point = Point2D(
             x=trajectory[COORDINATE_X].iloc[0], y=trajectory[COORDINATE_Y].iloc[0]
         )
 
         return self._optimize_trajectory_rotation(
-            trajectory.copy(), strong_ble_merged, initial_point
+            trajectory.copy(), strong_signal_merged, initial_point
         )
 
     def correct_initial_direction_with_fp(
@@ -66,20 +66,20 @@ class BLECorrector:
         trajectory: pd.DataFrame,
     ) -> pd.DataFrame:
         """FPデータを使用して軌跡を補正."""
-        if self.ble_fingerprints is None:
-            msg = "The attribute 'ble_fingerprints' is None."
+        if self.signal_fingerprints is None:
+            msg = "The attribute 'signal_fingerprints' is None."
             raise ValueError(msg)
 
-        strong_ble_scans = self._filter_strong_blescans(self.ble_realtime_scans)
+        strong_signal_scans = self._filter_strong_signal_scans(self.signal_realtime_scans)
         # 処理に時間がかかるため注意が必要
-        strong_ble_merged = self._estimate_positions_from_fp(
-            strong_ble_scans, self.ble_fingerprints
+        strong_signal_merged = self._estimate_positions_from_fp(
+            strong_signal_scans, self.signal_fingerprints
         )
 
         initial_point = Point2D(x=trajectory["x"].iloc[0], y=trajectory["y"].iloc[0])
 
         return self._optimize_trajectory_rotation(
-            trajectory.copy(), strong_ble_merged, initial_point
+            trajectory.copy(), strong_signal_merged, initial_point
         )
 
     def _calculate_rssi_weight(
@@ -232,41 +232,41 @@ class BLECorrector:
         )
 
     def _estimate_positions_from_fp(
-        self, ble_realtime_scans: pd.DataFrame, ble_fingerprints: pd.DataFrame
+        self, signal_realtime_scans: pd.DataFrame, signal_fingerprints: pd.DataFrame
     ) -> pd.DataFrame:
-        """全てのBLEデータに対して位置を推定."""
-        result_data = ble_realtime_scans.copy()
-        result_data["ble_x"] = 0.0
-        result_data["ble_y"] = 0.0
+        """全ての信号データに対して位置を推定."""
+        result_data = signal_realtime_scans.copy()
+        result_data["transmitter_x"] = 0.0
+        result_data["transmitter_y"] = 0.0
 
         for idx, row in result_data.iterrows():
             x, y = self._estimate_beacon_position(
-                ble_fingerprints, row.loc["bdaddress"], row.loc["rssi"]
+                signal_fingerprints, row.loc[TRANSMITTER_ID], row.loc["rssi"]
             )
-            result_data.loc[idx, "ble_x"] = x
-            result_data.loc[idx, "ble_y"] = y
+            result_data.loc[idx, "transmitter_x"] = x
+            result_data.loc[idx, "transmitter_y"] = y
 
         return result_data
 
     def _calculate_total_distance(
-        self, trajectory: pd.DataFrame, ble_realtime_scans: pd.DataFrame
+        self, trajectory: pd.DataFrame, signal_realtime_scans: pd.DataFrame
     ) -> float:
         merged = pd.merge_asof(
             trajectory.sort_values("ts"),
-            ble_realtime_scans.sort_values("ts"),
+            signal_realtime_scans.sort_values("ts"),
             on="ts",
             direction="nearest",
         )
 
         return np.sqrt(
-            (merged[COORDINATE_X] - merged["ble_x"]) ** 2
-            + (merged[COORDINATE_Y] - merged["ble_y"]) ** 2
+            (merged[COORDINATE_X] - merged["transmitter_x"]) ** 2
+            + (merged[COORDINATE_Y] - merged["transmitter_y"]) ** 2
         ).sum()
 
     def _optimize_trajectory_rotation(
         self,
         trajectory: pd.DataFrame,
-        ble_realtime_scans: pd.DataFrame,
+        signal_realtime_scans: pd.DataFrame,
         initial_point: Point2D,
     ) -> pd.DataFrame:
         angles = np.arange(0, 2 * np.pi, 0.01)
@@ -274,16 +274,16 @@ class BLECorrector:
             angles,
             key=lambda angle: self._calculate_total_distance(
                 self._rotate_trajectory(trajectory, angle, initial_point),
-                ble_realtime_scans,
+                signal_realtime_scans,
             ),
         )
 
         return self._rotate_trajectory(trajectory, optimal_angle, initial_point)
 
-    def _filter_strong_blescans(
-        self, ble_realtime_scans: pd.DataFrame
+    def _filter_strong_signal_scans(
+        self, signal_realtime_scans: pd.DataFrame
     ) -> pd.Series | pd.DataFrame:
-        """強いRSSI値のBLEスキャンのみをフィルタリングする."""
-        return ble_realtime_scans[
-            ble_realtime_scans["rssi"] > self.rssi_threshold
+        """強いRSSI値の信号スキャンのみをフィルタリングする."""
+        return signal_realtime_scans[
+            signal_realtime_scans["rssi"] > self.rssi_threshold
         ].copy()

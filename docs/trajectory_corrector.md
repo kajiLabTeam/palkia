@@ -5,7 +5,7 @@ classDiagram
         -PDREstimator pdr_estimator
         -DriftCorrector drift_corrector
         -MapMatcher map_matcher
-        -BLECorrector ble_corrector
+        -WirelessSignalCorrector ble_corrector
         +estimate_and_correct_trajectory()
     }
 
@@ -16,7 +16,7 @@ classDiagram
         -DataFrame _ble_realtime_scans
         +with_floor_map()
         +with_ground_truth()
-        +with_ble_data()
+        +with_wireless_signal()
         +build()
     }
 
@@ -29,14 +29,14 @@ classDiagram
         +correct_unwalkable_points()
     }
 
-    class BLECorrector {
-        +correct_initial_direction_with_ble_positions()
+    class WirelessSignalCorrector {
+        +correct_initial_direction_with_transmitter_positions()
         +correct_initial_direction_with_fp()
     }
 
     TrajectoryCorrector ..> TrajectoryCorrectorsBuilder : creates
     TrajectoryCorrector --* DriftCorrector : contains
     TrajectoryCorrector --* MapMatcher : contains
-    TrajectoryCorrector --* BLECorrector : contains
+    TrajectoryCorrector --* WirelessSignalCorrector : contains
 
 ```

@@ -9,7 +9,7 @@ sequenceDiagram
     
     C->>B: with_floor_map(floor_map)
     C->>B: with_ground_truth(gt_data)
-    C->>B: with_ble_data(ble_scans)
+    C->>B: with_wireless_signal(signal_realtime_scans)
     C->>B: build()
     B->>T: create
     C->>T: estimate_and_correct_trajectory()

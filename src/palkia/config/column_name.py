@@ -21,6 +21,8 @@ PRESSURE = "pressure"
 
 # BLE
 BLE_ADDRESS = "bdaddress"
+TRANSMITTER_ID = "bdaddress"
+
 RSSI = "rssi"
 
 # 位置

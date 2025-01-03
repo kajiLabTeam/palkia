@@ -20,14 +20,14 @@ from palkia.core.visualization import plot_trajectory
 
 
 def main() -> None:
-    acc_data, gyro_data, baro_data, _, gt_data, ble_realtime_scans = (
+    acc_data, gyro_data, baro_data, _, gt_data, signal_realtime_scans = (
         load_sensor_data_from_log(
             LOG_FILE_PATH,
         )
     )
 
-    print(ble_realtime_scans[ble_realtime_scans["rssi"] > -70])
-    print(len(ble_realtime_scans[ble_realtime_scans["rssi"] > -70]))
+    print(signal_realtime_scans[signal_realtime_scans["rssi"] > -70])
+    print(len(signal_realtime_scans[signal_realtime_scans["rssi"] > -70]))
 
     # PDR推定器の初期化
     pdr_estimator = PDREstimator(
@@ -58,9 +58,9 @@ def main() -> None:
     trajectory_corrector = (
         TrajectoryCorrector.builder(pdr_estimator)
         .with_floor_map(floor_map)
-        .with_ble_data(
-            ble_realtime_scans,
-            beacon_positions=pd.read_csv(BEACON_LIST_PATH),
+        .with_wireless_signal(
+            signal_realtime_scans,
+            transmitter_positions=pd.read_csv(BEACON_LIST_PATH),
             rssi_threshold=-75,
         )
         .with_ground_truth(gt_data)

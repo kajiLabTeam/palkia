@@ -5,9 +5,9 @@ from typing import TYPE_CHECKING
 from palkia.core.map import FloorMap
 from palkia.core.visualization.trajectory_plotter import plot_trajectory
 
-from .ble_correction import BLECorrector
 from .drift import DriftCorrector
 from .map_matching import MapMatcher
+from .wireless_signal_corrector import WirelessSignalCorrector
 
 if TYPE_CHECKING:
     import pandas as pd
@@ -24,7 +24,7 @@ class TrajectoryCorrector:
         pdr_estimator: PDREstimator,
         drift_corrector: DriftCorrector,
         map_matcher: MapMatcher | None,
-        ble_corrector: BLECorrector | None,
+        ble_corrector: WirelessSignalCorrector | None,
     ) -> None:
         self.pdr_estimator = pdr_estimator
         self.drift_corrector = drift_corrector
@@ -36,13 +36,13 @@ class TrajectoryCorrector:
         trajectory = self.drift_corrector.correct_drift()
 
         if self.ble_corrector is not None:
-            if self.ble_corrector.ble_fingerprints is not None:
+            if self.ble_corrector.signal_fingerprints is not None:
                 trajectory = self.ble_corrector.correct_initial_direction_with_fp(
                     trajectory
                 )
-            elif self.ble_corrector.beacon_positions is not None:
+            elif self.ble_corrector.transmitter_positions is not None:
                 trajectory = (
-                    self.ble_corrector.correct_initial_direction_with_ble_positions(
+                    self.ble_corrector.correct_initial_direction_with_transmitter_positions(
                         trajectory
                     )
                 )
@@ -80,17 +80,17 @@ class TrajectoryCorrectorsBuilder:
         self._gt_data = gt_data
         return self
 
-    def with_ble_data(
+    def with_wireless_signal(
         self,
-        ble_realtime_scans: pd.DataFrame,
-        ble_fingerprints: pd.DataFrame | None = None,
-        beacon_positions: pd.DataFrame | None = None,
+        signal_realtime_scans: pd.DataFrame,
+        signal_fingerprints: pd.DataFrame | None = None,
+        transmitter_positions: pd.DataFrame | None = None,
         rssi_threshold: int | None = None,
         time_window: int | None = None,
     ) -> TrajectoryCorrectorsBuilder:
-        self._ble_realtime_scans = ble_realtime_scans
-        self._beacon_positions = beacon_positions
-        self._ble_fingerprints = ble_fingerprints
+        self._ble_realtime_scans = signal_realtime_scans
+        self._beacon_positions = transmitter_positions
+        self._ble_fingerprints = signal_fingerprints
 
         # パラメータが指定された場合のみ更新
         if rssi_threshold is not None:
@@ -108,10 +108,10 @@ class TrajectoryCorrectorsBuilder:
             else None
         )
         ble_corrector = (
-            BLECorrector(
-                ble_realtime_scans=self._ble_realtime_scans,
-                beacon_positions=self._beacon_positions,
-                ble_fingerprints=self._ble_fingerprints,
+            WirelessSignalCorrector(
+                signal_realtime_scans=self._ble_realtime_scans,
+                transmitter_positions=self._beacon_positions,
+                signal_fingerprints=self._ble_fingerprints,
                 rssi_threshold=self._ble_config["rssi_threshold"],
                 time_window=self._ble_config["time_window"],
             )
