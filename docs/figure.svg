@@ -1,0 +1,70 @@
+<svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+  <!-- 背景 -->
+  <rect width="800" height="600" fill="white"/>
+  
+  <!-- 入力層 -->
+  <g transform="translate(50,50)">
+    <!-- センサーデータグループ -->
+    <rect x="0" y="0" width="200" height="150" fill="#E8F5E9" stroke="#2E7D32" stroke-width="2"/>
+    <text x="100" y="30" text-anchor="middle" font-size="16">センサーデータ</text>
+    <text x="20" y="60" font-size="14">・加速度センサー</text>
+    <text x="20" y="90" font-size="14">・ジャイロセンサー</text>
+    <text x="20" y="120" font-size="14">・気圧センサー</text>
+
+    <!-- 環境情報グループ -->
+    <rect x="250" y="0" width="200" height="150" fill="#E3F2FD" stroke="#1565C0" stroke-width="2"/>
+    <text x="350" y="30" text-anchor="middle" font-size="16">環境情報</text>
+    <text x="270" y="60" font-size="14">・フロアマップ</text>
+    <text x="270" y="90" font-size="14">・BLE信号</text>
+    <text x="270" y="120" font-size="14">・Wi-Fi信号</text>
+  </g>
+
+  <!-- 処理層 -->
+  <g transform="translate(50,250)">
+    <rect x="0" y="0" width="450" height="200" fill="#FFF3E0" stroke="#EF6C00" stroke-width="2"/>
+    <text x="225" y="30" text-anchor="middle" font-size="16">PDRベース3次元位置推定処理</text>
+    
+    <!-- PDR基本処理 -->
+    <rect x="20" y="50" width="130" height="120" fill="#FFE0B2" stroke="#EF6C00" stroke-width="1"/>
+    <text x="85" y="70" text-anchor="middle" font-size="14">PDR基本処理</text>
+    <text x="30" y="90" font-size="12">・歩行検出</text>
+    <text x="30" y="110" font-size="12">・方位推定</text>
+    <text x="30" y="130" font-size="12">・移動距離推定</text>
+
+    <!-- 補正処理 -->
+    <rect x="160" y="50" width="130" height="120" fill="#FFE0B2" stroke="#EF6C00" stroke-width="1"/>
+    <text x="225" y="70" text-anchor="middle" font-size="14">補正処理</text>
+    <text x="170" y="90" font-size="12">・マップマッチング</text>
+    <text x="170" y="110" font-size="12">・BLE補正</text>
+    <text x="170" y="130" font-size="12">・ドリフト補正</text>
+
+    <!-- 3次元推定 -->
+    <rect x="300" y="50" width="130" height="120" fill="#FFE0B2" stroke="#EF6C00" stroke-width="1"/>
+    <text x="365" y="70" text-anchor="middle" font-size="14">3次元推定</text>
+    <text x="310" y="90" font-size="12">・階層判定</text>
+    <text x="310" y="110" font-size="12">・垂直移動検出</text>
+    <text x="310" y="130" font-size="12">・3次元補正</text>
+  </g>
+
+  <!-- 出力層 -->
+  <g transform="translate(50,500)">
+    <rect x="150" y="0" width="150" height="50" fill="#F3E5F5" stroke="#6A1B9A" stroke-width="2"/>
+    <text x="225" y="30" text-anchor="middle" font-size="16">3次元位置情報</text>
+  </g>
+
+  <!-- 矢印 -->
+  <g stroke="#666" stroke-width="2" fill="none">
+    <!-- 入力から処理へ -->
+    <path d="M150,200 L150,250" marker-end="url(#arrowhead)"/>
+    <path d="M350,200 L350,250" marker-end="url(#arrowhead)"/>
+    <!-- 処理から出力へ -->
+    <path d="M225,450 L225,500" marker-end="url(#arrowhead)"/>
+  </g>
+
+  <!-- 矢印マーカー -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#666"/>
+    </marker>
+  </defs>
+</svg>

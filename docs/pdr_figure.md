@@ -1,7 +1,5 @@
 
 ```mermaid
-%%{init: {'theme': 'default', 'themeVariables': { 'fontSize': '20px', 'fontFamily': 'arial' }}}%%
-
 classDiagram
     class PDREstimator {
         -EnhancedSensorData sensor_data
