@@ -27,6 +27,7 @@ from .path import (
     BEACON_FP_PATH,
     BEACON_LIST_PATH,
     FLOOR_MAP_PATH,
+    GT_PATH,
     LOG_FILE_PATH,
     STEP_LENGTH_MODEL_PATH,
 )
@@ -60,4 +61,5 @@ __all__ = [
     "STEP_LENGTH_MODEL_PATH",
     "BEACON_FP_PATH",
     "BEACON_LIST_PATH",
+    "GT_PATH",
 ]
