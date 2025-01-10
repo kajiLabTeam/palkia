@@ -54,6 +54,13 @@ def plot_trajectory(
 
     if floor_map is not None:
         _add_floor_map(ax, floor_map)
+    else:
+        x_max =  trajectory[COORDINATE_X].max()
+        y_max =  trajectory[COORDINATE_Y].max()
+
+        ax.set_xlim(0, x_max + 1)
+        ax.set_ylim(0, y_max + 1)
+
 
     # メインの軌跡
     scatter = ax.scatter(
