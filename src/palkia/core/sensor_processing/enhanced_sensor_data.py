@@ -18,16 +18,20 @@ if TYPE_CHECKING:
     import numpy as np
 
 
+# TODO:ble_scan_dataを追加してもよさそう．enahancedをつけてる理由
+
 class EnhancedSensorData:
     _acc_df: pd.DataFrame
     _gyro_df: pd.DataFrame
-    _corrected_orrientation_df: pd.DataFrame
+    _corrected_orrientation_df: pd.DataFrame 
 
     def __init__(self, acc_df: pd.DataFrame, gyro_df: pd.DataFrame) -> None:
         self._acc_df = self._validate_and_process_acc(acc_df)
         self._gyro_df = self._validate_and_process_gyro(gyro_df)
         # 補正された方向データ(step_timingsではない)を保持するための変数
-        self._corrected_orrientation_df: pd.DataFrame = pd.DataFrame()
+        # TODO: ドリフト除去処理をしないとここにはデータが入らないため修正する必要がある．
+        # PDREsmatorのestmate_trajectoyでアップデートするか？何か気持ち悪いんだよな~
+        self._corrected_orrientation_df: pd.DataFrame = pd.read_csv("../data/raw/step_orientations.csv")
         self._sync_timestamps()
 
     @staticmethod

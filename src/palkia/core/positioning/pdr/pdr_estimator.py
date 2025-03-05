@@ -62,7 +62,16 @@ class PDREstimator:
         self,
         orientation_data: pd.DataFrame,
     ) -> pd.DataFrame:
+        """歩行時の方向を推定する"""
+        # カラム名の確認とデバッグ情報の出力
+        
         step_times = self.step_estimator.detect_step_times(
             self.enhanced_sensor_data.get_acc_data(),
         )
+        
+        # orientation_dataのカラム名がTIMESTAMPと一致することを確認
+        if TIMESTAMP not in orientation_data.columns:
+            # 必要に応じてカラム名を変更
+            orientation_data = orientation_data.rename(columns={'timestamp': TIMESTAMP})
+        
         return match_data(orientation_data, pd.Series(step_times))

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+
 from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
@@ -43,6 +44,7 @@ def plot_trajectory(
     *,
     ground_truth: pd.DataFrame | None = None,
     floor_map: FloorMap | None = None,
+    beacons: pd.DataFrame | None = None,
     figsize: tuple[int, int] = (12, 12),
     scatter_size: int = SCATTER_SIZE,
     start_point_color: str = START_POINT_COLOR,
@@ -58,8 +60,8 @@ def plot_trajectory(
         x_max =  trajectory[COORDINATE_X].max()
         y_max =  trajectory[COORDINATE_Y].max()
 
-        ax.set_xlim(0, x_max + 1)
-        ax.set_ylim(0, y_max + 1)
+        ax.set_xlim(0, x_max+1)
+        ax.set_ylim(0, y_max+1)
 
 
     # メインの軌跡
@@ -88,6 +90,18 @@ def plot_trajectory(
         marker="o",
         label="End",
     )
+
+    if beacons is not None:
+        ax.scatter(
+            beacons[COORDINATE_X],
+            beacons[COORDINATE_Y],
+            color="blue",
+            s=5,
+            marker="x",
+            label="強い電波を観測した位置",
+            )
+            
+
 
     if ground_truth is not None:
         ax.plot(

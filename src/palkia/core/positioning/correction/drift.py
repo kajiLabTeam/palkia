@@ -37,7 +37,7 @@ class DriftCorrector:
         )
 
         if self.gt_data is None:
-            optimal_drift = 0.005
+            optimal_drift = 0
         else:
             optimal_drift = self._search_optimal_drift_from_angle(
                 angle_df, self.gt_data
@@ -92,4 +92,6 @@ class DriftCorrector:
         drift_and_distance = [
             (drift, evaluate_drift(drift)) for drift in drift_range if abs(drift) < 0.01
         ]
+
+
         return min(drift_and_distance, key=lambda x: x[1])[0]
