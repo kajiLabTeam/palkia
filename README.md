@@ -134,14 +134,6 @@ make ci  # 実行：lint, format-check, pyright
 make format-fix
 ```
 
-## ライセンス
-
-[MIT License](LICENSE)
-
-## 貢献
-
-バグを発見した場合や機能リクエストがある場合は、GitHubのIssueを作成してください。プルリクエストも歓迎します。
-
 ## ディレクトリ構造
 
 ```
@@ -165,6 +157,16 @@ palkia/
        │   └── pdr/      # PDR関連コンポーネント
        └── utils/        # ユーティリティ関数
 ```
+
+
+## ライセンス
+
+[MIT License](LICENSE)
+
+## 貢献
+
+バグを発見した場合や機能リクエストがある場合は、GitHubのIssueを作成してください。プルリクエストも歓迎します。
+
 
 ## 開発者
 
