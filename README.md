@@ -11,6 +11,15 @@ Palkia は屋内位置推定を実現するためのPythonライブラリです�
 - BLEビーコンを用いた位置精度の向上
 - 気圧データを用いた階層変化の検出
 
+## 依存ライブラリ
+
+- Python ≥ 3.10
+- NumPy
+- SciPy
+- pandas
+- matplotlib
+- scikit-learn
+
 ## インストール
 
 Poetry を使用してインストールできます:
@@ -26,6 +35,11 @@ git clone https://github.com/kajiLabTeam/palkia.git
 cd palkia
 make install
 ```
+
+## 要件
+
+- Python 3.10以上
+- Poetry（依存関係管理）
 
 ## 使用例
 
@@ -127,6 +141,30 @@ make format-fix
 ## 貢献
 
 バグを発見した場合や機能リクエストがある場合は、GitHubのIssueを作成してください。プルリクエストも歓迎します。
+
+## ディレクトリ構造
+
+```
+palkia/
+├── .github/workflows/    # GitHub Actions CI設定
+├── dist/                 # ビルド済みパッケージ
+├── docs/                 # ドキュメント
+│   ├── api_reference.md  # API リファレンス
+│   └── user_guide.md     # ユーザーガイド
+├── examples/             # 使用例
+│
+│
+│
+├── src/                  # ソースコード
+   ├── main.py           # メインエントリーポイント
+   └── palkia/           # コアライブラリ
+       ├── __init__.py
+       ├── const/        # 定数定義
+       ├── positioning/  # 位置推定アルゴリズム
+       │   ├── correction/ # 位置補正アルゴリズム
+       │   └── pdr/      # PDR関連コンポーネント
+       └── utils/        # ユーティリティ関数
+```
 
 ## 開発者
 
