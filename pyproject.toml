@@ -19,6 +19,8 @@ scikit-learn = "^1.5.2"
 ruff = "^0.6.9"
 pytest = "^8.3.3"
 pyright = "^1.1.384"
+ahrs = "^0.3.1"
+ipykernel = "^6.29.5"
 
 [build-system]
 requires = ["poetry-core"]
@@ -26,8 +28,9 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.ruff]
 extend-include = ["*.ipynb"]
+
+
 [tool.ruff.lint]
-select = ["ALL"]
 ignore = [
   "E501",    # line too long, handled by black
   "PLR0913", # too many arguments
@@ -43,9 +46,18 @@ ignore = [
   # formatとの競合を解消するため、以下のルールを無効化
   "COM812", # Missing trailing comma in Python 3.6+
   "ISC001", # Single line implicit string concatenation
-
+  # testでassert文を使うため、以下のルールを無効化(testでのみにしたいが全て無効の状態よくない)
+  "S101",    # Use of assert detected
+  "TD003",
+  "FIX002",
+  "TD002",
+  "ERA001",
+  "PLR2004",
+  "PGH003",
 ]
+select = ["ALL"]
 unfixable = ["F401"]
+
 
 [tool.pyright]
 include = ["src"]

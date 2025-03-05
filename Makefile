@@ -18,6 +18,7 @@ lint:
 
 lint-fix:
 	poetry run ruff check src --fix
+	
 
 format-check:
 	poetry run ruff format --check src/palkia
@@ -35,8 +36,32 @@ clean:
 	rm -rf .mypy_cache
 
 run:
-	cd src && \
+	cd examples && \
 	poetry run python main.py
+
+run2:
+	cd examples && \
+	poetry run python main2.py
+
+run_floor5:
+	cd examples && \
+	poetry run python main_floor5.py
+
+run_ble:
+	cd examples && \
+	poetry run python main_ble.py
+
+run_pressure:
+	cd examples && \
+	poetry run python main_pressure.py
+
+run_correct:
+	cd examples && \
+	poetry run python main_correct.py
+
+	
+make generate-project-summary:
+	poetry run python generate_project_summary.py
 
 release:
 	poetry version patch

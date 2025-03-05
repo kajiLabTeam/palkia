@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-70 0 1200 650">
+    <!-- Styles -->
+    <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#666" />
+        </marker>
+    </defs>
+
+    <!-- Relationship lines (描画順序を最初に) -->
+    <line x1="400" y1="210" x2="400" y2="250" stroke="#666" marker-end="url(#arrow)" />
+    <line x1="300" y1="210" x2="150" y2="500" stroke="#666" marker-end="url(#arrow)" />
+    <line x1="390" y1="210" x2="400" y2="500" stroke="#666" marker-end="url(#arrow)" />
+    <line x1="500" y1="210" x2="750" y2="500" stroke="#666" marker-end="url(#arrow)" />
+
+    <!-- Relationship labels -->
+    <text x="420" y="240" font-size="12">creates</text>
+    <text x="180" y="460" font-size="12">contains</text>
+    <text x="420" y="470" font-size="12">contains</text>
+    <text x="620" y="410" font-size="12">contains</text>
+
+    <!-- TrajectoryCorrector -->
+    <rect x="200" y="50" width="400" height="170" fill="#f0f0ff" stroke="#000" />
+    <text x="400" y="80" text-anchor="middle" font-weight="bold">TrajectoryCorrector</text>
+    <line x1="200" y1="90" x2="600" y2="90" stroke="#000" />
+    <text x="210" y="110" font-size="14">-PDREstimator pdr_estimator</text>
+    <text x="210" y="130" font-size="14">-DriftCorrector drift_corrector</text>
+    <text x="210" y="150" font-size="14">-MapMatchCorrector map_match_corrector</text>
+    <text x="210" y="170" font-size="14">-WirelessSignalCorrector wireless_signal_corrector</text>
+    <line x1="200" y1="190" x2="600" y2="190" stroke="#000" />
+    <text x="210" y="210" font-size="14">+estimate_and_correct_trajectory()</text>
+
+    <!-- TrajectoryCorrectorsBuilder -->
+    <rect x="200" y="250" width="400" height="190" fill="#f0f0ff" stroke="#000" />
+    <text x="400" y="280" text-anchor="middle" font-weight="bold">TrajectoryCorrectorsBuilder</text>
+    <line x1="200" y1="290" x2="600" y2="290" stroke="#000" />
+    <text x="210" y="310" font-size="14">-PDREstimator pdr_estimator</text>
+    <text x="210" y="330" font-size="14">-FloorMap _floor_map</text>
+    <text x="210" y="350" font-size="14">-DataFrame _gt_data</text>
+    <text x="210" y="370" font-size="14">-DataFrame _ble_realtime_scans</text>
+    <line x1="200" y1="390" x2="600" y2="390" stroke="#000" />
+    <text x="210" y="410" font-size="14">+with_floor_map()</text>
+    <text x="210" y="430" font-size="14">+build()</text>
+
+    <!-- DriftCorrector -->
+    <rect x="50" y="500" width="250" height="100" fill="#f0f0ff" stroke="#000" />
+    <text x="175" y="530" text-anchor="middle" font-weight="bold">DriftCorrector</text>
+    <line x1="50" y1="540" x2="300" y2="540" stroke="#000" />
+    <line x1="50" y1="560" x2="300" y2="560" stroke="#000" />
+    <text x="60" y="580" font-size="14">+correct_drift()</text>
+
+    <!-- MapMatchCorrector -->
+    <rect x="350" y="500" width="300" height="120" fill="#f0f0ff" stroke="#000" />
+    <text x="500" y="530" text-anchor="middle" font-weight="bold">MapMatchCorrector</text>
+    <line x1="350" y1="540" x2="650" y2="540" stroke="#000" />
+    <line x1="350" y1="560" x2="650" y2="560" stroke="#000" />
+    <text x="360" y="580" font-size="14">+correct_initial_direction()</text>
+    <text x="360" y="600" font-size="14">+correct_unwalkable_points()</text>
+
+    <!-- WirelessSignalCorrector -->
+    <rect x="700" y="500" width="400" height="120" fill="#f0f0ff" stroke="#000" />
+    <text x="825" y="530" text-anchor="middle" font-weight="bold">WirelessSignalCorrector</text>
+
+    <line x1="700" y1="560" x2="1000" y2="560" stroke="#000" />
+    <line x1="700" y1="540" x2="1100" y2="540" stroke="#000" />
+    <line x1="700" y1="560" x2="1100" y2="560" stroke="#000" />
+    <text x="710" y="580" font-size="14">+correct_initial_direction_with_transmitter_positions()</text>
+    <text x="710" y="600" font-size="14">+correct_initial_direction_with_fp()</text>
+</svg>

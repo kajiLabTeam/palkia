@@ -1,0 +1,6 @@
+FLOOR_MAP_PATH = "../data/floor_maps/{}.{}"
+LOG_FILE_PATH = "../data/raw/xDR/4_1_51.txt"
+STEP_LENGTH_MODEL_PATH = "../data/models/reg_rbf_c0.002.pickle"
+BEACON_LIST_PATH = "../data/beacon_list/beacon_list.csv"
+BEACON_FP_PATH = "../data/beacon_fp/beacon_fp_FLU01.csv"
+GT_PATH = "../data/raw/xDR/gt/4_1_gt.csv"

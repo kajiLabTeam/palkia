@@ -1,0 +1,134 @@
+# floor_trajectory_plotter.py
+from __future__ import annotations
+
+import logging
+from typing import TYPE_CHECKING
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+from palkia.config import COORDINATE_X, COORDINATE_Y, TIMESTAMP
+
+from .plot_utils import  setup_axis
+
+if TYPE_CHECKING:
+    import pandas as pd
+    from matplotlib.axes import Axes
+    from matplotlib.collections import PathCollection
+
+    from palkia.core.positioning.floor_identification import FloorInfo
+    from palkia.core.map.floor_map import FloorMap
+
+logger = logging.getLogger(__name__)
+
+plt.rcParams["font.family"] = "Hiragino Sans"  # Mac の場合
+# フォントサイズの基本設定
+SMALL_SIZE = 12
+MEDIUM_SIZE = 14
+BIGGER_SIZE = 16
+
+# フォントサイズをグローバルに設定
+plt.rc("font", size=SMALL_SIZE)
+plt.rc("axes", titlesize=BIGGER_SIZE)
+plt.rc("axes", labelsize=MEDIUM_SIZE)
+plt.rc("xtick", labelsize=SMALL_SIZE)
+plt.rc("ytick", labelsize=SMALL_SIZE)
+plt.rc("legend", fontsize=MEDIUM_SIZE)
+
+
+def _plot_floor_map(floor_map: FloorMap, ax: Axes) -> None:
+    """フロアマップのプロット."""
+    ax.imshow(
+        np.rot90(floor_map.floor_map_data),
+        extent=(
+            0,
+            floor_map.floor_map_data.shape[0] * floor_map.dx,
+            0,
+            floor_map.floor_map_data.shape[1] * floor_map.dy,
+        ),
+        cmap="binary",
+        alpha=0.5,
+    )
+
+
+def plot_floor_trajectories(
+    floor_segments_dict: dict[int, FloorInfo],
+    floor_maps: dict[int, FloorMap],
+    figsize: tuple[int, int] = (15, 10),
+) -> None:
+    """階層ごとの軌跡をプロット."""
+    n_floors = len(floor_segments_dict)
+    if n_floors == 0:
+        logger.warning("No floors detected!")
+        return
+
+    # figureを作成し、カラーバー用のスペースを確保
+    fig = plt.figure(figsize=figsize)
+
+    # グリッド状のレイアウトを作成（右側にカラーバー用のスペースを確保）
+    gs = fig.add_gridspec(
+        (n_floors + 1) // 2,
+        2,
+        width_ratios=[1, 1],
+        left=0.1,  # 左マージン
+        right=0.85,  # 右マージン（カラーバー用にスペースを空ける）
+        hspace=0.3,  # サブプロット間の垂直方向の間隔
+        wspace=0.2,  # サブプロット間の水平方向の間隔
+    )
+
+    axes = [fig.add_subplot(gs[i // 2, i % 2]) for i in range((n_floors + 1) // 2 * 2)]
+    last_scatter: PathCollection | None = None
+
+    # 全体の時間範囲を取得
+    all_timestamps = []
+    for info in floor_segments_dict.values():
+        all_timestamps.extend(info.trajectory[TIMESTAMP].tolist())
+    time_min, time_max = min(all_timestamps), max(all_timestamps)
+
+    # 全てのaxesを一旦非表示に
+    for ax in axes:
+        ax.set_visible(False)
+
+    for i, (floor, info) in enumerate(sorted(floor_segments_dict.items())):
+        ax = axes[i]
+        ax.set_visible(True)
+
+        if floor in floor_maps:
+            _plot_floor_map(floor_maps[floor], ax)
+
+        if not info.trajectory.empty:
+            # 正規化された時間を使用
+            normalized_time = (info.trajectory[TIMESTAMP] - time_min) / (
+                time_max - time_min
+            )
+
+            last_scatter = ax.scatter(
+                info.trajectory[COORDINATE_X],
+                info.trajectory[COORDINATE_Y],
+                c=normalized_time,
+                cmap="rainbow",
+                s=5,
+                alpha=1,
+                vmin=0,
+                vmax=1,
+            )
+
+            setup_axis(ax, f"フロア {floor+4}階")
+            ax.legend(loc="upper right")
+
+    if last_scatter is not None:
+        # カラーバーを図の右側に配置
+        cax = fig.add_axes((0.87, 0.15, 0.02, 0.7))  # 位置とサイズを調整
+        cbar = fig.colorbar(
+            last_scatter,
+            cax=cax,
+            label="Time (s)",
+        )
+        # 元のタイムスタンプに戻した目盛りを設定
+        ticks = list(np.linspace(0, 1, 5))
+        cbar.set_ticks(ticks)
+        cbar.set_ticklabels(
+            [f"{t * (time_max - time_min) + time_min:.1f}" for t in ticks]
+        )
+
+    plt.show()
