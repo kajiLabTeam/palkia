@@ -121,10 +121,6 @@ class StepEstimator:
             gyro_data, pd.Series(step_times)
         )
 
-        # acc_norm_smoothed = self._smooth_acceleration(
-        #     self._calculate_acceleration_norm(step_timings_acc)
-        # )
-
         acc_norm = self._calculate_acceleration_norm(step_timings_acc)
 
         orientations_diff = self._calculate_orientations_difference(

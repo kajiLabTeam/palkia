@@ -102,9 +102,6 @@ def plot_pressure_with_stable_regions(
         baro_data[TIMESTAMP], baro_data[PRESSURE], "b-", alpha=0.6, label="Raw Pressure"
     )
 
-    # 安定区間の表示
-    max_pressure = baro_data[PRESSURE].max()
-    min_pressure = baro_data[PRESSURE].min()
 
     for start, end in stable_intervals:
         ax1.axvspan(start, end, color="g", alpha=0.2)

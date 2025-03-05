@@ -31,7 +31,6 @@ extend-include = ["*.ipynb"]
 
 
 [tool.ruff.lint]
-select = ["ALL"]
 ignore = [
   "E501",    # line too long, handled by black
   "PLR0913", # too many arguments
@@ -48,8 +47,15 @@ ignore = [
   "COM812", # Missing trailing comma in Python 3.6+
   "ISC001", # Single line implicit string concatenation
   # testでassert文を使うため、以下のルールを無効化(testでのみにしたいが全て無効の状態よくない)
-  "S101",
+  "S101",    # Use of assert detected
+  "TD003",
+  "FIX002",
+  "TD002",
+  "ERA001",
+  "PLR2004",
+  "PGH003",
 ]
+select = ["ALL"]
 unfixable = ["F401"]
 
 

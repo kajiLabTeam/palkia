@@ -208,26 +208,6 @@ class FloorIdentifier:
 
         return self._normalize_floor_numbers(floor_pressures)
 
-    # def _normalize_floor_numbers(
-    #     self, floor_pressures: dict[int, float]
-    # ) -> dict[int, float]:
-    #     """Normalize floor numbers to use 1 as ground floor.
-    #
-    #     Args:
-    #     ----
-    #         floor_pressures: Dictionary of temporary floor numbers and pressures.
-    #
-    #     Returns:
-    #     -------
-    #         Dictionary with normalized floor numbers.
-    #
-    #     """
-    #     pressures = np.array(list(floor_pressures.values()))
-    #     floor_numbers = np.argsort(pressures)[::-1] - len(pressures) // 2
-    #     return {
-    #         int(floor_num): pressure
-    #         for floor_num, pressure in zip(floor_numbers, pressures)
-    #     }
 
     def _normalize_floor_numbers(
         self, floor_pressures: dict[int, float]

@@ -9,7 +9,7 @@ import numpy as np
 
 from palkia.config import COORDINATE_X, COORDINATE_Y, TIMESTAMP
 
-from .plot_utils import create_colormap, setup_axis, setup_subplots
+from .plot_utils import  setup_axis
 
 if TYPE_CHECKING:
     import pandas as pd
@@ -51,59 +51,6 @@ def _plot_floor_map(floor_map: FloorMap, ax: Axes) -> None:
     )
 
 
-def _plot_floor_trajectory(
-    ax: Axes,
-    trajectory: pd.DataFrame,
-    time_intervals: list[tuple[float, float]],
-    color: np.ndarray,
-) -> PathCollection:
-    """1つのフロアの軌跡をプロット.
-
-    Returns
-    -------
-        PathCollection: scatterプロットのコレクション
-
-    """
-    x_col = COORDINATE_X if COORDINATE_X in trajectory.columns else "x"
-    y_col = COORDINATE_Y if COORDINATE_Y in trajectory.columns else "y"
-
-    scatter = ax.scatter(
-        trajectory[x_col],
-        trajectory[y_col],
-        c=trajectory[TIMESTAMP],
-        cmap="rainbow",
-        s=5,
-        alpha=1,
-    )
-
-    # 開始点と終了点
-    ax.scatter(
-        trajectory[x_col].iloc[0],
-        trajectory[y_col].iloc[0],
-        color="green",
-        s=100,
-        marker="^",
-        # label="Start",
-    )
-    ax.scatter(
-        trajectory[x_col].iloc[-1],
-        trajectory[y_col].iloc[-1],
-        color="red",
-        s=100,
-        marker="v",
-        label="End",
-    )
-
-    # # 時間区間ごとの軌跡
-    # for t_start, t_end in time_intervals:
-    #     mask = (trajectory[TIMESTAMP] >= t_start) & (trajectory[TIMESTAMP] <= t_end)
-    #     segment = trajectory[mask]
-    #     if len(segment) > 1:
-    #         ax.plot(segment[x_col], segment[y_col], color=color, alpha=0.8, linewidth=1)
-
-    return scatter
-
-
 def plot_floor_trajectories(
     floor_segments_dict: dict[int, FloorInfo],
     floor_maps: dict[int, FloorMap],
@@ -130,7 +77,6 @@ def plot_floor_trajectories(
     )
 
     axes = [fig.add_subplot(gs[i // 2, i % 2]) for i in range((n_floors + 1) // 2 * 2)]
-    colors = create_colormap(n_floors)
     last_scatter: PathCollection | None = None
 
     # 全体の時間範囲を取得
@@ -166,25 +112,6 @@ def plot_floor_trajectories(
                 vmin=0,
                 vmax=1,
             )
-
-            # # 開始点と終了点
-            # ax.scatter(
-            #     info.trajectory[COORDINATE_X].iloc[0],
-            #     info.trajectory[COORDINATE_Y].iloc[0],
-            #     color="green",
-            #     s=100,
-            #     marker="^",
-            #     # label="Start",
-            # )
-
-            # ax.scatter(
-            #     info.trajectory[COORDINATE_X].iloc[-1],
-            #     info.trajectory[COORDINATE_Y].iloc[-1],
-            #     color="red",
-            #     s=100,
-            #     marker="v",
-            #     label="End",
-            # )
 
             setup_axis(ax, f"フロア {floor+4}階")
             ax.legend(loc="upper right")
