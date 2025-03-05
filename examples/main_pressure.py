@@ -8,7 +8,6 @@ from palkia.config import (
     TIMESTAMP,
 )
 from palkia.core.map.floor_map import FloorMap
-from palkia.core.positioning.correction import DriftCorrector, MapMatchCorrector
 from palkia.core.positioning.correction.trajectory_corrector import TrajectoryCorrector
 from palkia.core.positioning.pdr.orientation_estimator import OrientationEstimator
 from palkia.core.positioning.pdr.pdr_estimator import PDREstimator
@@ -17,9 +16,7 @@ from palkia.core.positioning.pdr.three_dimensional_estimator import (
     ThreeDimensionalEstimator,
 )
 from palkia.core.positioning.pdr.trajectory_calculator import TrajectoryCalculator
-from palkia.core.sensor_processing.data_loader import load_sensor_data_from_log
 from palkia.core.sensor_processing.enhanced_sensor_data import EnhancedSensorData
-from palkia.core.visualization import plot_trajectory
 from palkia.core.visualization.floor_trajectory_plotter import plot_floor_trajectories
 
 
@@ -28,14 +25,9 @@ def main() -> None:
     gyro_data = pd.read_csv("../data/raw/other/ThreeDimensional/Gyroscope.csv")
     baro_data = pd.read_csv("../data/raw/other/ThreeDimensional/Barometer.csv")
 
-    max_time = 200
-
-    acc_data = acc_data[acc_data[TIMESTAMP] < max_time]
-    gyro_data = gyro_data[gyro_data[TIMESTAMP] < max_time]
-
     gt_data = pd.DataFrame(
         {
-            TIMESTAMP: [0, max_time],
+            TIMESTAMP: [0, 200],
             POS_X: [15, 15],
             POS_Y: [19, 19],
         },
