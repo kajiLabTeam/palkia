@@ -22,16 +22,10 @@ def main() -> None:
     acc_data = pd.read_csv("../data/raw/other/ThreeDimensional/Accelerometer.csv")
     gyro_data = pd.read_csv("../data/raw/other/ThreeDimensional/Gyroscope.csv")
 
-    max_time = 200
-
-    acc_data = acc_data[acc_data[TIMESTAMP] < max_time]
-    gyro_data = gyro_data[gyro_data[TIMESTAMP] < max_time]
     # センサーデータの可視化
-    # plot_sensor_data(acc_data, gyro_data)
-
     gt_data = pd.DataFrame(
         {
-            TIMESTAMP: [0, max_time],
+            TIMESTAMP: [0, 200],
             POS_X: [15, 15],
             POS_Y: [19, 19],
         },
@@ -81,15 +75,6 @@ def main() -> None:
 
     plot_trajectory(correct_map_matching_trajectory, floor_map=floor_map)
 
-    # walkable_trajectory = MapMatchCorrector(
-    #     config={}, pdr_estimator=pdr_estimator, floor_map=floor_map
-    # ).correct_unwalkable_points(correct_map_matching_trajectory)
-
-    # plot_trajectory(walkable_trajectory, floor_map=floor_map)
-
-    # # Ground truthとの比較（オプション）
-    # if not gt_data.empty:
-    #     plot_trajectory(trajectory, ground_truth=gt_data)
 
 
 if __name__ == "__main__":
